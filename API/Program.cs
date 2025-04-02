@@ -11,7 +11,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddGraphQLServer()
     .AddQueryType<Query>() // Adds the root Query type
     .AddMutationType<Mutation>()
-    .AddType<ProductType>();// Register ProductType for GraphQL
+    .AddType<AddProductInputType>()// Register ProductType for GraphQL
+    .AddType<ProductType>();// Register AddProductType for GraphQL
 
 string connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
