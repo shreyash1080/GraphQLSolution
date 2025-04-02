@@ -6,7 +6,7 @@ using HotChocolate.Types;
 namespace API.GraphQl.Types.InputType
 {
     //✅ InputObjectType<T> tells GraphQL that this is an input structure, not a database entity.
-    public class ProductInputType : InputObjectType<ProductInput>
+    public class AddProductInputType : InputObjectType<ProductInput>
     {
         protected override void Configure(IInputObjectTypeDescriptor<ProductInput> descriptor)
         {
