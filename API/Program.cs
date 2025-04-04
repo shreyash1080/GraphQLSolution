@@ -3,9 +3,14 @@ using API.GraphQl.Types.InputType;
 using API.GraphQL;
 using Application.Services;
 using Core.Interfaces;
+using Infrastructure.Migrations;
 using Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
+
+
+
+
 
 // Register Hot Chocolate GraphQL Server
 builder.Services.AddGraphQLServer()
@@ -15,6 +20,9 @@ builder.Services.AddGraphQLServer()
     .AddType<ProductType>();// Register AddProductType for GraphQL
 
 string connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+// ✅ Run Migrations Before Registering Repositories
+MigrationService.RunMigrations(connectionString);
 
 // Register the IProductRepository interface with a singleton lifetime.
 // - `AddSingleton` ensures only one instance of ProductRepository is created and used throughout the application's lifetime.

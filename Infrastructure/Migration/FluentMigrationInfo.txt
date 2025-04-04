@@ -1,0 +1,39 @@
+﻿Step 1: Install Fluent Migrator
+		Install FluentMigrator.Runner and FluentMigrator.Extensions.SqlServer via NuGet.
+		This provides the necessary tools to define and execute migrations.
+
+🔹 Step 2: Create a Migration Class
+		Create a class (CreateProductsTable) inside Infrastructure.Migrations.
+		Inside this class, define methods:
+		Up() → Creates a new table if it doesn’t exist.
+		Down() → Drops the table if a rollback is needed.
+		Use Schema.Table().Exists() to check if the table already exists before creating it.
+
+🔹 Step 3: Create a Helper Class for Table Creation (Optional but Recommended)
+		Define a static helper class (FluentMigratorExtensions) to prevent duplicate table creation.
+		Add a method (CreateTableIfNotExists) that ensures a table is only created if it does not already exist.
+		This helps reuse the logic across multiple migrations, keeping the migration scripts clean and maintainable.
+
+🔹 Step 4: Implement Migration Runner
+		Create a class (MigrationService) that sets up Fluent Migrator
+		Use ServiceCollection to configure Fluent Migrator to scan for migration classes and execute them automatically.
+		Call MigrateUp() to apply all pending migrations when the application starts.
+
+🔹 Step 5: Integrate Migration Execution in Application Startup
+		In Program.cs, fetch the database connection string from configuration.
+		Call MigrationService.RunMigrations() to execute all defined migrations before the application starts.
+		This ensures the database schema is always up to date before any API or application logic runs.
+
+🔹 Step 6: Verify the Migration
+		Option 1: Check the database using INFORMATION_SCHEMA.TABLES in SQL Server.
+		Option 2: Run FluentMigrator commands manually to check if migrations were applied
+		Option 3: Restart the application and see if the database initializes correctly.
+
+✅ Final Summary
+Step	Purpose
+1. Install Fluent Migrator	Adds required packages for schema migrations.
+2. Create Migration Class	Defines schema changes (table creation, modifications).
+3. Create Helper Class	Prevents duplicate table creation and improves maintainability.
+4. Implement Migration Runner	Configures Fluent Migrator to scan and execute migrations.
+5. Integrate in Startup	Runs migrations automatically when the app starts.
+6. Verify Migration	Ensures changes are correctly applied in the database.
