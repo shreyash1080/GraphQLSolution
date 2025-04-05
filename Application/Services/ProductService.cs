@@ -1,16 +1,21 @@
 ﻿using Application.Models;
 using Core.Entities;
 using Core.Interfaces;
+using KafkaProducer.Publisher;
+using KafkaProducer.Topic;
 
 namespace Application.Services
 {
     public class ProductService
     {
         private readonly IProductRepository _repository;
+        private readonly ITopicPublisher _topicPublisher;
 
-        public ProductService(IProductRepository repository)
+
+        public ProductService(IProductRepository repository, ITopicPublisher topicPublisher)
         {
             _repository = repository;
+            _topicPublisher = topicPublisher;
         }
         
         public Task<List<Product>> GetProductsAsync()
@@ -27,7 +32,25 @@ namespace Application.Services
                 Price = productInput.Price
             };
 
-            return await _repository.AddProductAsync(product);
+            // 🔹 Save product to database
+            var savedProduct = await _repository.AddProductAsync(product);
+
+            // 🔹 Debugging: Log the saved product ID
+            Console.WriteLine($"✅ Product inserted: {savedProduct.Id} - {savedProduct.Name}");
+
+            //        bool isPublished = await _topicPublisher.TryPublishMessage(
+            //    TopicNameEnum.AddProductTopic,
+            //    savedProduct.Id,
+            //    savedProduct
+            //);
+            await _topicPublisher.TryPublishMessage(
+            TopicNameEnum.AddProductTopic,
+            savedProduct.Id,
+            product);
+
+            //Console.WriteLine(isPublished ? "✅ Published" : "❌ Failed");
+
+            return savedProduct;
         }
     }
 }

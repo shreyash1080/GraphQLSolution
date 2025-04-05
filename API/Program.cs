@@ -5,6 +5,9 @@ using Application.Services;
 using Core.Interfaces;
 using Infrastructure.Migrations;
 using Infrastructure.Repositories;
+using KafkaProducer.Configuration;
+using KafkaProducer.Publisher;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,6 +39,18 @@ builder.Services.AddSingleton<IProductRepository>(provider =>
 // - `AddScoped` ensures a new instance of ProductService is created per HTTP request.
 // - This is ideal for services like ProductService that rely on request-specific data or processing.
 builder.Services.AddScoped<ProductService>();
+
+
+
+
+builder.Services.Configure<KafkaConfig>(builder.Configuration.GetSection("Kafka"));
+builder.Services.AddSingleton<KafkaConfig>(sp =>
+    sp.GetRequiredService<IOptions<KafkaConfig>>().Value);
+
+// Register Kafka Producer Dependencies
+builder.Services.AddSingleton<ITopicPublisher, TopicPublisher>();
+
+
 
 
 var app = builder.Build();

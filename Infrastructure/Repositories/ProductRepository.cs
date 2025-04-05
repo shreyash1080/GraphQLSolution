@@ -85,16 +85,21 @@ namespace Infrastructure.Repositories
             //Allows us to fetch Id, Name, and Price after insertion
             using var reader = await command.ExecuteReaderAsync();
 
-            if (await reader.ReadAsync()) // Check if a row was inserted and returned
+            if (await reader.ReadAsync())
             {
-                return new Product
+                var insertedProduct = new Product
                 {
-                    Id = reader.GetInt32(0), // Get the first column (Id)
-                    Name = reader.GetString(1), // Get the second column (Name)
-                    Price = reader.GetDecimal(2) // Get the third column (Price)
+                    Id = reader.GetInt32(0),
+                    Name = reader.GetString(1),
+                    Price = reader.GetDecimal(2)
                 };
-            }
 
+                // 🔹 Log the inserted product
+                Console.WriteLine($"✅ Product Inserted - ID: {insertedProduct.Id}, Name: {insertedProduct.Name}, Price: {insertedProduct.Price}");
+
+                return insertedProduct;
+            }
+            Console.WriteLine("❌ No Product Inserted.");
             return null; // If no row was inserted, return null
         }
     }
