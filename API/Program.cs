@@ -3,6 +3,7 @@ using API.GraphQl.Types.InputType;
 using API.GraphQL;
 using Application.Services;
 using Core.Interfaces;
+using FluentMigrator.Runner;
 using Infrastructure.Migrations;
 using Infrastructure.Repositories;
 using KafkaProducer.Configuration;
@@ -11,66 +12,76 @@ using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Register Hot Chocolate GraphQL Server
+// 1. Configure Kestrel FIRST for Azure port binding
+builder.WebHost.ConfigureKestrel(serverOptions =>
+{
+    serverOptions.ListenAnyIP(8080); // Explicit Azure port configuration
+});
+
+// 2. Add services in proper order
 builder.Services.AddGraphQLServer()
-    .AddQueryType<Query>() // Adds the root Query type
-    .AddMutationType<Mutation>() // Adds the root Mutation type
-    .AddType<AddProductInputType>() // Registers AddProductInputType for GraphQL input definitions
-    .AddType<ProductType>(); // Registers ProductType for GraphQL output definitions
+    .AddQueryType<Query>()
+    .AddMutationType<Mutation>()
+    .AddType<AddProductInputType>()
+    .AddType<ProductType>();
 
-// Retrieve the database connection string from configuration
-string connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+// 3. Configure logging early
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
 
-// ✅ Run Migrations Before Registering Repositories
-// Ensures that database schema is up to date by applying any pending migrations
-MigrationService.RunMigrations(connectionString);
+// 4. Database Configuration with Error Handling
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+if (string.IsNullOrEmpty(connectionString))
+{
+    throw new InvalidOperationException("Database connection string is not configured");
+}
 
-// Register the IProductRepository interface with a singleton lifetime.
-// - `AddSingleton` ensures only one instance of ProductRepository is created and used throughout the application's lifetime.
-// - `IProductRepository` is the abstraction, and `ProductRepository` is the implementation being registered here.
-builder.Services.AddSingleton<IProductRepository>(provider =>
-    // A lambda is used to provide the dependency (ProductRepository instance).
-    // The connection string is passed to the ProductRepository constructor.
-    new ProductRepository(connectionString));
+//// 5. Configure FluentMigrator with DI
+//builder.Services.AddFluentMigratorCore()
+//    .ConfigureRunner(rb => rb
+//        .AddPostgres()
+//        .WithGlobalConnectionString(connectionString)
+//        .ScanIn(typeof(AddUsersTable).Assembly).For.Migrations())
+//    .AddLogging(lb => lb.AddFluentMigratorConsole());
 
-// Register the ProductService class with a scoped lifetime.
-// - `AddScoped` ensures a new instance of ProductService is created per HTTP request.
-// - This is ideal for services like ProductService that rely on request-specific data or processing.
+// 6. Service Registrations
+builder.Services.AddSingleton<IProductRepository>(new ProductRepository(connectionString));
 builder.Services.AddScoped<ProductService>();
-
-// Configure Kafka settings by binding the "Kafka" section from appsettings.json
 builder.Services.Configure<KafkaConfig>(builder.Configuration.GetSection("Kafka"));
-
-// Register KafkaConfig as a singleton service for DI
 builder.Services.AddSingleton<KafkaConfig>(sp =>
     sp.GetRequiredService<IOptions<KafkaConfig>>().Value);
-
-// Register Kafka Producer dependencies
 builder.Services.AddSingleton<ITopicPublisher, TopicPublisher>();
-
-builder.Environment.EnvironmentName = "Development";
-
 
 var app = builder.Build();
 
-// Map the GraphQL endpoint
-// - The endpoint is accessible at /graphql and handles all GraphQL API requests.
-app.MapGraphQL();
+//// 7. Run Migrations with proper error handling
+//using (var scope = app.Services.CreateScope())
+//{
+//    var runner = scope.ServiceProvider.GetRequiredService<IMigrationRunner>();
+//    try
+//    {
+//        runner.MigrateUp();
+//    }
+//    catch (Exception ex)
+//    {
+//        app.Logger.LogCritical(ex, "Database migration failed");
+//        throw; // Ensure failure is visible in Azure logs
+//    }
+//}
 
-// Use GraphQL Playground for UI testing and query exploration
-// - Accessible at /graphql-playground
-// - Provides an interactive interface for testing GraphQL queries and mutations
+// 8. Configure endpoints
+app.MapGraphQL();
+app.UseRouting();
 app.UseEndpoints(endpoints =>
 {
     endpoints.MapGraphQL("/graphql");
 });
 
+// 9. Azure-specific configuration
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
-var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
-app.Urls.Add($"http://*:{port}");
-// Optional: Use HTTPS redirection for production environments
-// - Redirects all HTTP requests to HTTPS for secure communication
-app.UseHttpsRedirection();
-
-// Start the application
+app.Logger.LogInformation("Application starting on port 8080");
 app.Run();
