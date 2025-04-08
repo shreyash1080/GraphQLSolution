@@ -1,51 +1,62 @@
-name: Build and deploy .NET Core application to Web App API20250408182400
+name: Build and Deploy .NET Core Application to Azure WebApp
+
 on:
   push:
     branches:
-    - master
+      - master # Trigger workflow only for changes to the master branch
+
 env:
-  AZURE_WEBAPP_NAME: API20250408182400
-  AZURE_WEBAPP_PACKAGE_PATH: API/published
-  CONFIGURATION: Release
-  DOTNET_CORE_VERSION: 9.0.x
-  WORKING_DIRECTORY: API
+  AZURE_WEBAPP_NAME: API20250408182400 # Name of your Azure Web App
+  AZURE_WEBAPP_PACKAGE_PATH: API/published # Path to the published output folder
+  CONFIGURATION: Release # Build configuration
+  DOTNET_CORE_VERSION: 9.0.x # Target .NET Core version
+  WORKING_DIRECTORY: API # Path to the .NET project folder
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - name: Setup .NET SDK
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: ${{ env.DOTNET_CORE_VERSION }}
-    - name: Restore
-      run: dotnet restore "${{ env.WORKING_DIRECTORY }}"
-    - name: Build
-      run: dotnet build "${{ env.WORKING_DIRECTORY }}" --configuration ${{ env.CONFIGURATION }} --no-restore
-    - name: Test
-      run: dotnet test "${{ env.WORKING_DIRECTORY }}" --no-build
-    - name: Publish
-      run: dotnet publish "${{ env.WORKING_DIRECTORY }}" --configuration ${{ env.CONFIGURATION }} --no-build --output "${{ env.AZURE_WEBAPP_PACKAGE_PATH }}"
-    - name: Publish Artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: webapp
-        path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+      - uses: actions/checkout@v4 # Checkout the repository code
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_CORE_VERSION }} # Install specified .NET Core version
+
+      - name: Restore Dependencies
+        run: dotnet restore "${{ env.WORKING_DIRECTORY }}" # Restore NuGet packages
+
+      - name: Build Project
+        run: dotnet build "${{ env.WORKING_DIRECTORY }}" --configuration ${{ env.CONFIGURATION }} --no-restore # Build the project
+
+      - name: Run Tests
+        run: dotnet test "${{ env.WORKING_DIRECTORY }}" --no-build # Run unit tests
+
+      - name: Publish Artifacts
+        run: dotnet publish "${{ env.WORKING_DIRECTORY }}" --configuration ${{ env.CONFIGURATION }} --no-build --output "${{ env.AZURE_WEBAPP_PACKAGE_PATH }}" # Publish the application
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: webapp # Artifact name
+          path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }} # Path to the published output
+
   deploy:
     runs-on: ubuntu-latest
     needs: build
     steps:
-    - name: Download artifact from build job
-      uses: actions/download-artifact@v4
-      with:
-        name: webapp
-        path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
-    - name: Azure Login
-      uses: azure/login@v2
-      with:
-        creds: ${{ secrets.API20250408182400_SPN }}
-    - name: Deploy to Azure WebApp
-      uses: azure/webapps-deploy@v2
-      with:
-        app-name: ${{ env.AZURE_WEBAPP_NAME }}
-        package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+      - name: Download Build Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: webapp # Name of the artifact to download
+          path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }} # Path to store the downloaded artifact
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.API20250408182400_SPN }} # Azure credentials secret
+
+      - name: Deploy to Azure WebApp
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }} # Azure Web App name
+          package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }} # Path to the deployment package
