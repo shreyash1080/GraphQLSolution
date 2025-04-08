@@ -60,11 +60,14 @@ app.MapGraphQL();
 // Use GraphQL Playground for UI testing and query exploration
 // - Accessible at /graphql-playground
 // - Provides an interactive interface for testing GraphQL queries and mutations
-app.UseGraphQLPlayground("/graphql-playground", new GraphQL.Server.Ui.Playground.PlaygroundOptions
+app.UseEndpoints(endpoints =>
 {
-    GraphQLEndPoint = "/graphql" // Specifies the GraphQL API endpoint
+    endpoints.MapGraphQL("/graphql");
 });
 
+
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+app.Urls.Add($"http://*:{port}");
 // Optional: Use HTTPS redirection for production environments
 // - Redirects all HTTP requests to HTTPS for secure communication
 app.UseHttpsRedirection();
