@@ -48,6 +48,9 @@ builder.Services.AddSingleton<KafkaConfig>(sp =>
 // Register Kafka Producer dependencies
 builder.Services.AddSingleton<ITopicPublisher, TopicPublisher>();
 
+builder.Environment.EnvironmentName = "Development";
+
+
 var app = builder.Build();
 
 // Map the GraphQL endpoint
