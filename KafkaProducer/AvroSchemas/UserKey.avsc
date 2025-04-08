@@ -1,0 +1,9 @@
+﻿{
+  "type": "record",
+  "name": "UserEvent",
+  "namespace": "KafkaProducer.AvroSchemas",
+  "fields": [
+    { "name": "Name", "type": "string" },
+    { "name": "Email", "type": "string" }
+  ]
+}
