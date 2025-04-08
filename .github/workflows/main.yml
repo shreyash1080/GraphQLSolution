@@ -30,4 +30,10 @@ jobs:
       - name: Publish
         run: dotnet publish ./GraphQLSolution.sln -c Release --no-build -o ./out
 
-  
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: <YOUR_AZURE_APP_NAME>
+          slot-name: production
+          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
+          package: ./out
