@@ -3,6 +3,10 @@ on:
   push:
     branches:
     - master
+  pull_request:
+    branches:
+    - master
+
 env:
   AZURE_WEBAPP_NAME: MyAppAzureTest
   AZURE_WEBAPP_PACKAGE_PATH: API/published
