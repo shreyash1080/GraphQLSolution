@@ -38,12 +38,12 @@ namespace KafkaProducer.Publisher
             //ProducerConfig is a configuration class for setting up a Kafka producer. It defines how the producer behaves, including Kafka broker settings, acknowledgments, and client identity.
             var config = new ProducerConfig
             {
-                BootstrapServers = kafkaConfig.BootstrapServers,// Kafka broker address
-                ClientId = kafkaConfig.Producer.ClientId,// Unique identifier for this producer
-                Acks = kafkaConfig.Producer.Acks,// Controls message durability
-                MessageTimeoutMs = kafkaConfig.Producer.MessageTimeoutMs, // Add
-                RetryBackoffMs = kafkaConfig.Producer.RetryBackoffMs,      // Add
-                EnableIdempotence = kafkaConfig.Producer.EnableIdempotence // Add
+                BootstrapServers = "localhost:9092",// Kafka broker address
+                ClientId = _kafkaConfig.Producer.ClientId,// Unique identifier for this producer
+                Acks = _kafkaConfig.Producer.Acks,// Controls message durability
+                MessageTimeoutMs = _kafkaConfig.Producer.MessageTimeoutMs, // Add
+                RetryBackoffMs = _kafkaConfig.Producer.RetryBackoffMs,      // Add
+                EnableIdempotence = _kafkaConfig.Producer.EnableIdempotence // Add
             };
 
             //A builder class that helps create a Kafka producer based on ProducerConfig.

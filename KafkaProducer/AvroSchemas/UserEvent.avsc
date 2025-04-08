@@ -1,0 +1,8 @@
+﻿{
+  "type": "record",
+  "name": "UserKey",
+  "namespace": "KafkaProducer.AvroSchemas",
+  "fields": [
+    { "name": "UserId", "type": "int" }
+  ]
+}
