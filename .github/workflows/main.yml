@@ -1,0 +1,29 @@
+name: Publish 
+
+on:
+ workflow_dispatch:
+ push:
+   branches:
+    - main
+
+jobs:
+ publish:
+  runs-on: ubuntu-latest
+
+  steps:
+   - uses: actions/checkout@v3
+
+   - name: Setup .NET
+     uses: actions/setup-dotnet@v3
+     with:
+       dotnet-version: '8.0.x'
+
+   - name: Restore
+     run: dotnet restore ./GraphQLSolution.sln
+
+   - name: Build
+     run: dotnet build ./GraphQLSolution.sln --Configuration Release --no-restore
+
+   - name: Publish
+     run: dotnet publish ./GraphQLSolution.sln --Configuration Release --no-build 
+  
