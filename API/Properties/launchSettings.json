@@ -19,13 +19,13 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-      "Azure": {
-        "commandName": "Project",
-        "dotnetRunMessages": true,
-        "applicationUrl": "http://0.0.0.0:8080",
-        "environmentVariables": {
-          "ASPNETCORE_ENVIRONMENT": "Production"
-        }
+    "Azure": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Production",
+        "ASPNETCORE_URLS": "http://+:8080"
       }
     }
+  }
 }
