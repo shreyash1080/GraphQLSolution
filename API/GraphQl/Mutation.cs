@@ -13,5 +13,12 @@ namespace API.GraphQl
             return await productService.AddProductServiceAsync(productInput);
         }
 
+
+        public async Task<Users> AddUsersAsync(UserModel userInput, [Service] ProductService productService)
+        {
+
+            return await productService.AddUsersServiceAsync(userInput);
+        }
+
     }
 }

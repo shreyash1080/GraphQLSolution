@@ -12,5 +12,7 @@ namespace Core.Interfaces
         Task<List<Product>> GetProductsAsync();
 
         Task<Product> AddProductAsync(Product product);
+
+        Task<Users> AddUsersAsync(Users user);
     }
 }

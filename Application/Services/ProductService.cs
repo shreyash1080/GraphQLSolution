@@ -52,5 +52,22 @@ namespace Application.Services
 
             return savedProduct;
         }
+
+        public async Task<Users> AddUsersServiceAsync(UserModel user)
+        {
+            var userEntity = new Users
+            {
+                email = user.Email,
+                first_name = user.FirstName,
+                last_name = user.LastName,
+                password_hash = user.Password,
+                created_at = DateTime.UtcNow,
+                updated_at = DateTime.UtcNow,
+            };
+
+            var users = await _repository.AddUsersAsync(userEntity);
+            return users;
+        }
+
     }
 }

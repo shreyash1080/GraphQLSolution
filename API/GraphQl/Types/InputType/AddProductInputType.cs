@@ -10,7 +10,7 @@ namespace API.GraphQl.Types.InputType
     {
         protected override void Configure(IInputObjectTypeDescriptor<ProductInput> descriptor)
         {
-            descriptor.Name("ProductInput");
+            descriptor.Name("AddProductInput");
 
             descriptor.Field(x => x.Name)
                 .Type<NonNullType<StringType>>()
