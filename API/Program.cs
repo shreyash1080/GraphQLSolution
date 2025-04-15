@@ -9,6 +9,9 @@ using Infrastructure.Repositories;
 using KafkaProducer.Configuration;
 using KafkaProducer.Publisher;
 using Microsoft.Extensions.Options;
+using Confluent.Kafka;
+using Microsoft.Extensions.Diagnostics.HealthChecks; // Add this using directive
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,7 +24,12 @@ builder.Services.AddGraphQLServer()
     .AddQueryType<Query>() // Adds the root Query type
     .AddMutationType<Mutation>()
     .AddType<AddProductInputType>()// Register ProductType for GraphQL
-    .AddType<ProductType>();// Register AddProductType for GraphQL
+    .AddType<ProductType>()// Register AddProductType for GraphQL
+    .ModifyRequestOptions(opt =>
+    {
+        opt.ExecutionTimeout = TimeSpan.FromMinutes(3); // Increase timeout to 3 minutes
+        opt.IncludeExceptionDetails = true; // Show detailed errors
+    });
 
 string connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
@@ -62,7 +70,19 @@ builder.Services.AddAutoMapper(typeof(ProductMappingProfile));
 
 
 
+
 var app = builder.Build();
+
+// Add health checks
+builder.Services.AddHealthChecks()
+    .AddSqlServer(connectionString, timeout: TimeSpan.FromSeconds(5))
+    .AddKafka(new ProducerConfig
+    {
+        BootstrapServers = builder.Configuration["Kafka:BootstrapServers"]
+    });
+
+app.MapHealthChecks("/health");
+
 
 // Configure the GraphQL endpoint
 app.MapGraphQL(); // Maps the endpoint at /graphql
