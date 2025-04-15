@@ -22,7 +22,9 @@ namespace Infrastructure.Migrations
                 .ConfigureRunner(rb => rb
                    .AddSqlServer() // Specifies SQL Server as the database type
                     .WithGlobalConnectionString(connectionString) // Sets the connection string
-                    .ScanIn(typeof(CreateProductsTable).Assembly).For.Migrations()) // Scans for CreateProductsTable and related migrations
+                    .ScanIn(typeof(CreateProductsTable).Assembly).For.Migrations()
+                    .ScanIn(typeof(_20250415_RemoveCategoryTable).Assembly).For.Migrations()
+                    ) // Scans for CreateProductsTable and related migrations
                                                                                   
                 .BuildServiceProvider(false); // Builds the service provider
 
