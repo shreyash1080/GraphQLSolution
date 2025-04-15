@@ -12,43 +12,25 @@ namespace Infrastructure.Migrations
     {
         public override void Up()
         {
-            // Check if the 'CategoryId' column exists in the 'users' table, then delete it
-            if (Schema.Table("users").Column("CategoryId").Exists())
+            // Step 1: Drop the foreign key constraint 'FK_Products_Categories' using raw SQL
+            Execute.Sql("ALTER TABLE Products DROP CONSTRAINT FK_Products_Categories");
+
+            // Step 2: Remove the 'CategoryId' column from the 'Products' table
+            if (Schema.Table("Products").Column("CategoryId").Exists())
             {
-                Delete.Column("CategoryId").FromTable("users");
+                Delete.Column("CategoryId").FromTable("Products");
             }
 
-            // Check if the 'Category' table exists, then delete it
-            if (Schema.Table("Category").Exists())
+            // Step 3: Delete the 'Categories' table
+            if (Schema.Table("Categories").Exists())
             {
-                Delete.Table("Category");
+                Delete.Table("Categories");
             }
         }
 
         public override void Down()
         {
-            // Recreate the 'Category' table if it was deleted
-            if (!Schema.Table("Category").Exists())
-            {
-                Create.Table("Category")
-                    .WithColumn("CategoryId").AsInt32().PrimaryKey().Identity()
-                    .WithColumn("Name").AsString(255).NotNullable()
-                    .WithColumn("Description").AsString(1000).Nullable()
-                    .WithColumn("CreatedAt").AsDateTime().WithDefault(SystemMethods.CurrentDateTime);
-            }
-
-            // Re-add the 'CategoryId' column to the 'users' table
-            if (!Schema.Table("users").Column("CategoryId").Exists())
-            {
-                Alter.Table("users")
-                    .AddColumn("CategoryId").AsInt32().Nullable();
-
-                // Optionally, if there was a foreign key relationship, recreate it
-                Create.ForeignKey("FK_users_Category_CategoryId")
-                    .FromTable("users").ForeignColumn("CategoryId")
-                    .ToTable("Category").PrimaryColumn("CategoryId")
-                    .OnDeleteOrUpdate(System.Data.Rule.None);
-            }
+            //TO_DO
         }
     }
 }
