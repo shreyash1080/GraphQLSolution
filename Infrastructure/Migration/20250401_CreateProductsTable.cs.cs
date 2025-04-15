@@ -7,24 +7,24 @@ namespace Infrastructure.Migrations
     {
         public override void Up()
         {
-            // Drop the table only if it exists
-            if (Schema.Table("users").Exists())
+            // Check if the 'Products' table exists before creating it
+            if (!Schema.Table("Products").Exists())
             {
                 Create.Table("Products")
-                        .WithColumn("Id").AsInt32().PrimaryKey().Identity()
-                        .WithColumn("Name").AsString(255).NotNullable()
-                        .WithColumn("Price").AsDecimal().NotNullable()
-                        .WithColumn("CreatedAt").AsDateTime().Nullable()
-                        .WithColumn("Description").AsString(int.MaxValue).Nullable()
-                        .WithColumn("Stock").AsInt32().WithDefaultValue(0).NotNullable()
-                        .WithColumn("IsAvailable").AsBoolean().WithDefaultValue(true).NotNullable()
-                        .WithColumn("Category").AsString(255).Nullable();
+                    .WithColumn("Id").AsInt32().PrimaryKey().Identity()
+                    .WithColumn("Name").AsString(255).NotNullable()
+                    .WithColumn("Price").AsDecimal(19, 5).NotNullable()
+                    .WithColumn("CreatedAt").AsDateTime().Nullable()
+                    .WithColumn("Description").AsString(int.MaxValue).Nullable()
+                    .WithColumn("Stock").AsInt32().NotNullable().WithDefaultValue(0)
+                    .WithColumn("IsAvailable").AsBoolean().NotNullable().WithDefaultValue(true)
+                    .WithColumn("Category").AsString(255).Nullable();
             }
         }
 
         public override void Down()
         {
-            // Drop the Products table
+            // Drop the 'Products' table if it exists
             if (Schema.Table("Products").Exists())
             {
                 Delete.Table("Products");

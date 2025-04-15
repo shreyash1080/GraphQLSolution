@@ -1,9 +1,4 @@
 ﻿using FluentMigrator;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Infrastructure.Migrations
 {
@@ -12,16 +7,17 @@ namespace Infrastructure.Migrations
     {
         public override void Up()
         {
-            // Step 1: Drop the foreign key constraint 'FK_Products_Categories' using raw SQL
-            Execute.Sql("ALTER TABLE Products DROP CONSTRAINT FK_Products_Categories");
+            // Drop the foreign key constraint 'FK_Products_Categories'
+            Execute.Sql("IF EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_Products_Categories') ALTER TABLE Products DROP CONSTRAINT FK_Products_Categories");
 
-            // Step 2: Remove the 'CategoryId' column from the 'Products' table
+            // Remove the 'CategoryId' column if it exists
             if (Schema.Table("Products").Column("CategoryId").Exists())
             {
                 Delete.Column("CategoryId").FromTable("Products");
             }
-                // Check if the 'Categories' table exists, then delete it
-                if (Schema.Table("Categories").Exists())
+
+            // Delete the 'Categories' table if it exists
+            if (Schema.Table("Categories").Exists())
             {
                 Delete.Table("Categories");
             }
@@ -29,8 +25,7 @@ namespace Infrastructure.Migrations
 
         public override void Down()
         {
-           //MM
+            // Rollback logic (if required)
         }
     }
 }
-
