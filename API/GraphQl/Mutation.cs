@@ -8,16 +8,16 @@ namespace API.GraphQl
     public class Mutation
     {
 
-        public async Task<Product>  AddProductAsync(ProductInput productInput , [Service] ProductService productService)
+        public async Task<ProductModel>  AddProductAsync(ProductModel productModel , [Service] ProductService productService)
         {
-            return await productService.AddProductServiceAsync(productInput);
+            return await productService.AddProductServiceAsync(productModel);
         }
 
 
-        public async Task<Users> AddUsersAsync(UserModel userInput, [Service] ProductService productService)
+        public async Task<UserModel> AddUsersAsync(UserModel userInput, [Service] UserService userService)
         {
 
-            return await productService.AddUsersServiceAsync(userInput);
+            return await userService.AddUsersServiceAsync(userInput);
         }
 
     }

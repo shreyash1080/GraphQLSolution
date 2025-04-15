@@ -2,23 +2,33 @@
 
 namespace Infrastructure.Migrations
 {
-    [Migration(20250401)] // Unique ID for migration
+    [Migration(20250410)]
     public class CreateProductsTable : Migration
     {
         public override void Up()
         {
-            this.CreateTableIfNotExists("Products", table =>
+            // Drop the table only if it exists
+            if (Schema.Table("users").Exists())
             {
-                table.WithColumn("Id").AsInt32().PrimaryKey().Identity();
-                table.WithColumn("Name").AsString(255).NotNullable();
-                table.WithColumn("Price").AsDecimal().NotNullable();
-            });
+                Create.Table("Products")
+                        .WithColumn("Id").AsInt32().PrimaryKey().Identity()
+                        .WithColumn("Name").AsString(255).NotNullable()
+                        .WithColumn("Price").AsDecimal().NotNullable()
+                        .WithColumn("CreatedAt").AsDateTime().Nullable()
+                        .WithColumn("Description").AsString(int.MaxValue).Nullable()
+                        .WithColumn("Stock").AsInt32().WithDefaultValue(0).NotNullable()
+                        .WithColumn("IsAvailable").AsBoolean().WithDefaultValue(true).NotNullable()
+                        .WithColumn("Category").AsString(255).Nullable();
+            }
         }
 
-        // Removes table on rollback.
         public override void Down()
         {
-            Delete.Table("Products");
+            // Drop the Products table
+            if (Schema.Table("Products").Exists())
+            {
+                Delete.Table("Products");
+            }
         }
     }
 }

@@ -1,0 +1,46 @@
+[33mcdb5186[m[33m ([m[1;36mHEAD -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m)[m Remoed Fluent Migrator
+[33m3f0c3f1[m tttt
+[33m5e671f1[m launchSetting
+[33ma122a7d[m apsetting update
+[33m7d6544f[m gql
+[33m8e1e77d[m Test
+[33m173729c[m Prod
+[33m56f6203[m pr run
+[33m7ce7e2d[m Azure
+[33m98c2aa8[m Delete .github/workflows/API20250408181014.yml
+[33m9a87fc9[m ttt
+[33m44ecb6b[m yml
+[33m7a5f77c[m Test
+[33mcee5f16[m Delete .github/workflows/API20250408181014.yml
+[33mb41b899[m pr workflow run
+[33m9374744[m new workflow
+[33m19a1adc[m Delete .github/workflows/sac1080.yml
+[33md81d46c[m Delete .github/workflows/api-app-20250408170127.yml
+[33mef73fea[m Update main.yml
+[33m844c068[m uI FOR GQL
+[33m7ec5940[m Publish
+[33mcbe7b26[m Merge pull request #3 from shreyash1080/Test-workflow
+[33m0bb9270[m Update main.yml
+[33mf492e18[m Update main.yml
+[33m9c4341f[m[33m ([m[1;31morigin/Test-workflow[m[33m, [m[1;32mTest-workflow[m[33m)[m Test
+[33m3021a8d[m Update main.yml
+[33m2fe2c9e[m Update main.yml
+[33m3490de9[m Update main.yml
+[33m938376c[m Merge pull request #1 from shreyash1080/AVRO-IMPLEMENTATION-BRANCH
+[33m9359f48[m Remove Migration
+[33m3ea54be[m[33m ([m[1;32mAVRO-IMPLEMENTATION-BRANCH[m[33m)[m Merge branch 'AVRO-IMPLEMENTATION-BRANCH' of https://github.com/shreyash1080/GraphQLSolution into AVRO-IMPLEMENTATION-BRANCH
+[33m048007c[m test
+[33me0e6678[m Merge pull request #2 from shreyash1080/git-workflow-actions
+[33m2434f7e[m[33m ([m[1;31morigin/git-workflow-actions[m[33m)[m Create main.yml
+[33m4fa845b[m[33m ([m[1;31morigin/AVRO-IMPLEMENTATION-BRANCH[m[33m)[m Delete Migration/SQL/SP/sp_CreateProduct.sql
+[33m62a3d77[m Delete Migration/Migration.csproj
+[33mfab1156[m Delete Migration/Class1.cs
+[33m0dee1f2[m initial commit empty
+[33mcf7d82f[m Kafka Implementation Producer
+[33m1fb0977[m Added Fluent Migrator
+[33m964bad4[m Program
+[33m0e9af7f[m AddProductInputType
+[33m7ce92a0[m Added Connection Helper but not using for now
+[33mb1f2a22[m small fix
+[33ma91089c[m Add project files.
+[33m31d02af[m Add .gitattributes, .gitignore, README.md, and LICENSE.txt.

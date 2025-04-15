@@ -1,36 +1,41 @@
-﻿using Application.Models;
+﻿using Application.Interfaces;
+using Application.Models;
+using AutoMapper;
 using Core.Entities;
 using Core.Interfaces;
 using KafkaProducer.Publisher;
 using KafkaProducer.Topic;
+using Microsoft.Graph.Security.MicrosoftGraphSecurityRunHuntingQuery;
+using System.Globalization;
 
 namespace Application.Services
 {
-    public class ProductService
+    public class ProductService : IProductService
     {
         private readonly IProductRepository _repository;
         private readonly ITopicPublisher _topicPublisher;
+        private readonly IMapper _mapper;
 
 
-        public ProductService(IProductRepository repository, ITopicPublisher topicPublisher)
+        public ProductService(IProductRepository repository, ITopicPublisher topicPublisher, IMapper mapper)
         {
             _repository = repository;
             _topicPublisher = topicPublisher;
-        }
-        
-        public Task<List<Product>> GetProductsAsync()
-        {
-            var products = _repository.GetProductsAsync();
-            return products;
+            _mapper = mapper;
         }
 
-        public async Task<Product>  AddProductServiceAsync(ProductInput productInput)
+        public async Task<List<ProductModel>> GetProductsAsync()
         {
-            var product = new Product
-            {
-                Name = productInput.Name,
-                Price = productInput.Price
-            };
+            var products = await _repository.GetProductsAsync();
+            // Map Product to ProductModel
+            var productModels = _mapper.Map<List<ProductModel>>(products);
+            return productModels;
+        }
+
+        public async Task<ProductModel> AddProductServiceAsync(ProductModel productModel)
+        {
+            // Map ProductInput to Product 
+            var product = _mapper.Map<Product>(productModel);
 
             // 🔹 Save product to database
             var savedProduct = await _repository.AddProductAsync(product);
@@ -48,25 +53,11 @@ namespace Application.Services
             savedProduct.Id,
             product);
 
+            var result = _mapper.Map<ProductModel>(product);
+
             //Console.WriteLine(isPublished ? "✅ Published" : "❌ Failed");
 
-            return savedProduct;
-        }
-
-        public async Task<Users> AddUsersServiceAsync(UserModel user)
-        {
-            var userEntity = new Users
-            {
-                email = user.Email,
-                first_name = user.FirstName,
-                last_name = user.LastName,
-                password_hash = user.Password,
-                created_at = DateTime.UtcNow,
-                updated_at = DateTime.UtcNow,
-            };
-
-            var users = await _repository.AddUsersAsync(userEntity);
-            return users;
+            return result;
         }
 
     }

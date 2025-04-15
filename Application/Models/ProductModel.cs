@@ -1,12 +1,13 @@
-﻿using System;
+﻿using Core.Entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Core.Entities
+namespace Application.Models
 {
-    public class Product
+    public class ProductModel
     {
         public int? Id { get; set; }
 
@@ -21,7 +22,9 @@ namespace Core.Entities
         public int Stock { get; set; }
 
         public bool IsAvailable { get; set; }
+        public string? Category { get; set; } = null!;
 
-        public string? Category { get; set; }
+
+
     }
 }

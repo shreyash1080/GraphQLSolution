@@ -20,9 +20,10 @@ namespace Infrastructure.Migrations
                 .AddLogging(config => config.AddConsole())
                 .AddFluentMigratorCore() // Registers FluentMigrator services
                 .ConfigureRunner(rb => rb
-                    .AddSqlServer() // Specifies SQL Server as the database type
+                   .AddSqlServer() // Specifies SQL Server as the database type
                     .WithGlobalConnectionString(connectionString) // Sets the connection string
-                    .ScanIn(typeof(CreateProductsTable).Assembly).For.Migrations()) // Scans for migrations
+                    .ScanIn(typeof(CreateProductsTable).Assembly).For.Migrations()) // Scans for CreateProductsTable and related migrations
+                                                                                  
                 .BuildServiceProvider(false); // Builds the service provider
 
             // ✅ STEP 2: Create a DI scope for running the migration
