@@ -68,21 +68,22 @@ builder.Services.AddSingleton<ITopicPublisher, TopicPublisher>();
 // Add AutoMapper
 builder.Services.AddAutoMapper(typeof(ProductMappingProfile));
 
-
+builder.Services.AddHealthChecks()
+    .AddSqlServer(connectionString, timeout: TimeSpan.FromSeconds(5));
+    //.AddKafka(new ProducerConfig
+    //{
+    //    BootstrapServers = builder.Configuration["Kafka:BootstrapServers"],
+    //    // 👇 Add these settings to prevent timeouts
+    //    SocketTimeoutMs = 5000,
+    //    MessageTimeoutMs = 5000,
+    //    RequestTimeoutMs = 5000
+    //}, timeout: TimeSpan.FromSeconds(10)); // Increase health check timeout
 
 
 var app = builder.Build();
 
-// Add health checks
-builder.Services.AddHealthChecks()
-    .AddSqlServer(connectionString, timeout: TimeSpan.FromSeconds(5))
-    .AddKafka(new ProducerConfig
-    {
-        BootstrapServers = builder.Configuration["Kafka:BootstrapServers"]
-    });
-
+app.UseRouting(); // Add this before MapHealthChecks
 app.MapHealthChecks("/health");
-
 
 // Configure the GraphQL endpoint
 app.MapGraphQL(); // Maps the endpoint at /graphql
