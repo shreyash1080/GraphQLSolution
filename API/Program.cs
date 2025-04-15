@@ -2,6 +2,7 @@ using API.GraphQl;
 using API.GraphQl.Types.InputType;
 using API.GraphQL;
 using Application.Services;
+using Application.AutoMapping;
 using Core.Interfaces;
 using Infrastructure.Migrations;
 using Infrastructure.Repositories;
@@ -35,10 +36,15 @@ builder.Services.AddSingleton<IProductRepository>(provider =>
     // The connection string is passed to the ProductRepository constructor.
     new ProductRepository(connectionString));
 
+builder.Services.AddSingleton<IUserRepository>(provider => (IUserRepository)new UserRepository(connectionString));
+
+
 // Register the ProductService class with a scoped lifetime.
 // - `AddScoped` ensures a new instance of ProductService is created per HTTP request.
 // - This is ideal for services like ProductService that rely on request-specific data or processing.
 builder.Services.AddScoped<ProductService>();
+
+builder.Services.AddScoped<UserService>();
 
 
 
@@ -50,6 +56,9 @@ builder.Services.AddSingleton<KafkaConfig>(sp =>
 // Register Kafka Producer Dependencies
 builder.Services.AddSingleton<ITopicPublisher, TopicPublisher>();
 
+
+// Add AutoMapper
+builder.Services.AddAutoMapper(typeof(ProductMappingProfile));
 
 
 

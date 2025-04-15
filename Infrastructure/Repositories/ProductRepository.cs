@@ -5,6 +5,7 @@ using Core.Entities;
 using Core.Interfaces;
 using Application.Models;
 using System.Data;
+using Microsoft.Extensions.Logging; // Reference to the Product class defined in the Core.Entities namespace
 
 namespace Infrastructure.Repositories
 {
@@ -14,6 +15,7 @@ namespace Infrastructure.Repositories
     public class ProductRepository : IProductRepository
     {
         private readonly string _connectionString;
+
 
         /// <summary>
         /// Constructor to initialize the repository with a database connection string.
@@ -40,7 +42,7 @@ namespace Infrastructure.Repositories
                 await connection.OpenAsync();
 
                 // Define a SQL command to execute. The SQL query fetches Id, Name, and Price columns from the Products table.
-                var command = new SqlCommand("SELECT Id, Name, Price FROM Products", connection);
+                var command = new SqlCommand("SELECT Id,Name,CreatedAt,Description,Stock,IsAvailable, Category,Price FROM Products", connection);
 
                 // ExecuteReaderAsync runs the query and provides a reader for streaming rows from the database.
                 using (var reader = await command.ExecuteReaderAsync())
@@ -51,9 +53,16 @@ namespace Infrastructure.Repositories
                         // Add each row's data to the products list by mapping the columns to a Product object.
                         products.Add(new Product
                         {
-                            Id = reader.GetInt32(0), // Get the value of the first column (Id) as an integer.
-                            Name = reader.GetString(1), // Get the value of the second column (Name) as a string.
-                            Price = reader.GetDecimal(2) // Get the value of the third column (Price) as a decimal.
+                            Id = reader.GetInt32("Id"), // Get the value of the first column (Id) as an integer.
+                            Name = reader.GetString("Name"), // Get the value of the second column (Name) as a string.
+                            Price = reader.IsDBNull("Price") ? 0 : reader.GetDecimal("Price"), // Handle potential null values
+                            CreatedAt = reader.IsDBNull("CreatedAt") ? null : reader.GetDateTime("CreatedAt"), // Handle potential null values
+                            Description = reader.IsDBNull("Description") ? null : reader.GetString("Description"), // Handle potential null values
+                            Stock = reader.IsDBNull("Stock") ? 0 : reader.GetInt32("Stock"), // Handle potential null values
+                            IsAvailable = reader.IsDBNull("IsAvailable") ? false : reader.GetBoolean("IsAvailable"), // Handle potential null values
+                            Category = reader.IsDBNull("Category") ? null : reader.GetString("Category") // Handle potential null values
+
+
                         });
                     }
                 }
@@ -71,15 +80,32 @@ namespace Infrastructure.Repositories
 
             // Define the SQL query with OUTPUT to return the inserted row
             using var command = new SqlCommand(
-                "INSERT INTO Products (Name, Price) " +
-                "OUTPUT INSERTED.Id, INSERTED.Name, INSERTED.Price " +//OUTPUT INSERTED allows us to get the newly created row directly without needing another SELECT query
-                "VALUES (@Name, @Price)",
-                connection);
+             "INSERT INTO Products (Name, Price, CreatedAt, Description, Stock, IsAvailable, Category) " +
+             "OUTPUT INSERTED.Id, INSERTED.Name, INSERTED.Price, INSERTED.CreatedAt, INSERTED.Description, " +
+             "INSERTED.Stock, INSERTED.IsAvailable, INSERTED.Category " +
+             "VALUES (@Name, @Price, @CreatedAt, @Description, @Stock, @IsAvailable, @Category)",
+            connection);
+
 
             // Add parameters to the command to prevent SQL injection
             //SqlDbType It's an enum representing SQL Server data types in C#.
-            command.Parameters.Add(new SqlParameter("@Name", System.Data.SqlDbType.NVarChar) { Value = product.Name });
-            command.Parameters.Add(new SqlParameter("@Price", System.Data.SqlDbType.Decimal) { Value = product.Price });
+            // Add parameters to the command to prevent SQL injection
+            command.Parameters.Add(new SqlParameter("@Name", SqlDbType.NVarChar) { Value = product.Name });
+            command.Parameters.Add(new SqlParameter("@Price", SqlDbType.Decimal) { Value = product.Price });
+            command.Parameters.Add(new SqlParameter("@CreatedAt", SqlDbType.DateTime)
+            {
+                Value = (object?)product.CreatedAt ?? DBNull.Value
+            });
+            command.Parameters.Add(new SqlParameter("@Description", SqlDbType.NVarChar)
+            {
+                Value = (object?)product.Description ?? DBNull.Value
+            });
+            command.Parameters.Add(new SqlParameter("@Stock", SqlDbType.Int) { Value = product.Stock });
+            command.Parameters.Add(new SqlParameter("@IsAvailable", SqlDbType.Bit) { Value = product.IsAvailable });
+            command.Parameters.Add(new SqlParameter("@Category", SqlDbType.NVarChar) { Value = product.Category });
+
+
+
 
             // Execute the command and read the output values
             //Reads multiple columns returned from the OUTPUT clause
@@ -90,10 +116,15 @@ namespace Infrastructure.Repositories
             {
                 var insertedProduct = new Product
                 {
-                    Id = reader.GetInt32(0),
-                    Name = reader.GetString(1),
-                    Price = reader.GetDecimal(2)
-                };
+                    Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                    Name = reader.GetString(reader.GetOrdinal("Name")),
+                    Price = reader.GetDecimal(reader.GetOrdinal("Price")),
+                    CreatedAt = reader.IsDBNull(reader.GetOrdinal("CreatedAt")) ? (DateTime?)null : reader.GetDateTime(reader.GetOrdinal("CreatedAt")),
+                    Description = reader.GetString(reader.GetOrdinal("Description")),
+                    Stock = reader.GetInt32(reader.GetOrdinal("Stock")),
+                    IsAvailable = reader.GetBoolean(reader.GetOrdinal("IsAvailable")),
+                    Category = reader.GetString(reader.GetOrdinal("Category"))
+                };;
 
                 // 🔹 Log the inserted product
                 Console.WriteLine($"✅ Product Inserted - ID: {insertedProduct.Id}, Name: {insertedProduct.Name}, Price: {insertedProduct.Price}");
@@ -103,72 +134,6 @@ namespace Infrastructure.Repositories
             Console.WriteLine("❌ No Product Inserted.");
             return null; // If no row was inserted, return null
         }
-
-        public async Task<Users> AddUsersAsync(Users user)
-        {
-            using var connection = new SqlConnection(_connectionString);
-            await connection.OpenAsync();
-
-            const string query = @"
-                                     INSERT INTO users (
-                                     email, 
-                                     password_hash, 
-                                     first_name, 
-                                     last_name, 
-                                     created_at, 
-                                     updated_at
-                                    )
-                                    OUTPUT INSERTED.*
-                                    VALUES (
-                                    @Email, 
-                                    @PasswordHash, 
-                                    @FirstName, 
-                                    @LastName, 
-                                    @CreatedAt, 
-                                    @UpdatedAt
-                                   )";
-
-            try
-            {
-                using var command = new SqlCommand(query, connection);
-
-                command.Parameters.AddWithValue("@Email", user.email);
-                command.Parameters.AddWithValue("@PasswordHash", user.password_hash);
-                command.Parameters.AddWithValue("@FirstName", user.first_name ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@LastName", user.last_name ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@CreatedAt", user.created_at);
-                command.Parameters.AddWithValue("@UpdatedAt", user.updated_at);
-
-                using var reader = await command.ExecuteReaderAsync();
-
-                if (await reader.ReadAsync())
-                {
-                    var insertedUser = new Users
-                    {
-                        user_id = reader.GetInt32(reader.GetOrdinal("user_id")),
-                        email = reader.GetString(reader.GetOrdinal("email")),
-                        password_hash = reader.GetString(reader.GetOrdinal("password_hash")),
-                        first_name = reader.GetString("first_name"),
-                        last_name = reader.GetString("last_name"),
-                        created_at = reader.GetDateTime(reader.GetOrdinal("created_at")),
-                        updated_at = reader.GetDateTime(reader.GetOrdinal("updated_at"))
-                    };
-
-                    return insertedUser;
-                }
-                return null; // If no row was inserted, return null
-        }
-            catch (SqlException ex)
-            {
-                throw; // Re-throw with original stack trace
-            }
-            finally
-            {
-                await connection.CloseAsync();
-            }
-        }
-
-
 
     }
 }

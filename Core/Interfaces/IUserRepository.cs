@@ -7,13 +7,10 @@ using System.Threading.Tasks;
 
 namespace Core.Interfaces
 {
-    public interface IProductRepository
+    public interface IUserRepository
     {
-        Task<List<Product>> GetProductsAsync();
-
-        Task<Product> AddProductAsync(Product product);
-
-
+        Task<Users?> GetUserLoginAsync(string email, string password);
+        Task<Users> AddUsersAsync(Users user);
 
     }
 }
