@@ -25,11 +25,14 @@ builder.Services.AddGraphQLServer()
     .AddMutationType<Mutation>()
     .AddType<AddProductInputType>()// Register ProductType for GraphQL
     .AddType<ProductType>()// Register AddProductType for GraphQL
+    .AllowIntrospection(true) // Enable this temporarily
+    .ModifyOptions(options => options.StrictValidation = false)
     .ModifyRequestOptions(opt =>
     {
         opt.ExecutionTimeout = TimeSpan.FromMinutes(3); // Increase timeout to 3 minutes
         opt.IncludeExceptionDetails = true; // Show detailed errors
     });
+    
 
 string connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
