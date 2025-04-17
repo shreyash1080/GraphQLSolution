@@ -70,19 +70,33 @@ builder.Services.AddAutoMapper(typeof(ProductMappingProfile));
 
 builder.Services.AddHealthChecks()
     .AddSqlServer(connectionString, timeout: TimeSpan.FromSeconds(5));
-    //.AddKafka(new ProducerConfig
-    //{
-    //    BootstrapServers = builder.Configuration["Kafka:BootstrapServers"],
-    //    // 👇 Add these settings to prevent timeouts
-    //    SocketTimeoutMs = 5000,
-    //    MessageTimeoutMs = 5000,
-    //    RequestTimeoutMs = 5000
-    //}, timeout: TimeSpan.FromSeconds(10)); // Increase health check timeout
+//.AddKafka(new ProducerConfig
+//{
+//    BootstrapServers = builder.Configuration["Kafka:BootstrapServers"],
+//    // 👇 Add these settings to prevent timeouts
+//    SocketTimeoutMs = 5000,
+//    MessageTimeoutMs = 5000,
+//    RequestTimeoutMs = 5000
+//}, timeout: TimeSpan.FromSeconds(10)); // Increase health check timeout
+
+// Add CORS policy before building the app
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 
 
 var app = builder.Build();
 
-app.UseRouting(); // Add this before MapHealthChecks
+// Enable CORS before other middleware
+app.UseCors("AllowAll");
+app.UseRouting();
 app.MapHealthChecks("/health");
 
 // Configure the GraphQL endpoint
