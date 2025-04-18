@@ -135,6 +135,43 @@ namespace Infrastructure.Repositories
             return null; // If no row was inserted, return null
         }
 
+        public async Task<Product> DeleteProductAsync(int productId)
+        {
+            using var connection = new SqlConnection(_connectionString);
+            await connection.OpenAsync(); // Open the connection asynchronously
+
+            // Define the SQL query with OUTPUT to return deleted details
+            using var command = new SqlCommand(
+                @"DELETE FROM Products 
+                 OUTPUT DELETED.Id, DELETED.Name 
+                WHERE Id = @Id",
+                connection);
+
+            // Add parameter to prevent SQL injection
+            command.Parameters.Add(new SqlParameter("@Id", SqlDbType.Int) { Value = productId });
+
+            using var reader = await command.ExecuteReaderAsync();
+
+            if (await reader.ReadAsync())
+            {
+                // Create and populate the deleted product
+                var deletedProduct = new Product
+                {
+                    Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                    Name = reader.GetString(reader.GetOrdinal("Name"))
+                };
+
+                // Log the deleted product
+                Console.WriteLine($"✅ Product Deleted - ID: {deletedProduct.Id}, Name: {deletedProduct.Name}");
+
+                return deletedProduct; // Return the deleted product for confirmation
+            }
+
+            // Log and return null if no product was deleted
+            Console.WriteLine("❌ No Product Found to Delete.");
+            return null;
+        }
+
     }
 }
 

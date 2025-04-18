@@ -1,4 +1,5 @@
 ﻿using Application.Models;
+using Common.Response;
 using Core.Entities;
 using System;
 using System.Collections.Generic;
@@ -13,5 +14,7 @@ namespace Application.Interfaces
 
         Task<List<ProductModel>> GetProductsAsync();
         Task<ProductModel> AddProductServiceAsync(ProductModel productInput);
-    }
+
+        Task<ServiceResponse<string>> DeleteProductServiceAsync(int productId);
+     }
 }
