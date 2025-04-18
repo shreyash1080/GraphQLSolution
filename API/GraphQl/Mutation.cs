@@ -1,6 +1,7 @@
 ﻿using API.GraphQl.Types;
 using Application.Models;
 using Application.Services;
+using Common.Response;
 using Core.Entities;
 
 namespace API.GraphQl
@@ -18,6 +19,13 @@ namespace API.GraphQl
         {
 
             return await userService.AddUsersServiceAsync(userInput);
+        }
+
+
+        public async Task<ServiceResponse<string>> DeleteProductAsync(int productId, [Service] ProductService productService)
+        {
+            var result = await productService.DeleteProductServiceAsync(productId);
+            return result;
         }
 
     }
