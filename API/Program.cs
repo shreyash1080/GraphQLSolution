@@ -72,15 +72,18 @@ builder.Services.AddSingleton<ITopicPublisher, TopicPublisher>();
 builder.Services.AddAutoMapper(typeof(ProductMappingProfile));
 
 builder.Services.AddHealthChecks()
-    .AddSqlServer(connectionString, timeout: TimeSpan.FromSeconds(5));
-//.AddKafka(new ProducerConfig
-//{
-//    BootstrapServers = builder.Configuration["Kafka:BootstrapServers"],
-//    // 👇 Add these settings to prevent timeouts
-//    SocketTimeoutMs = 5000,
-//    MessageTimeoutMs = 5000,
-//    RequestTimeoutMs = 5000
-//}, timeout: TimeSpan.FromSeconds(10)); // Increase health check timeout
+    .AddSqlServer(connectionString, timeout: TimeSpan.FromSeconds(5))
+    .AddKafka(new ProducerConfig
+    {
+        BootstrapServers = "pkc-619z3.us-east1.gcp.confluent.cloud:9092",
+        SecurityProtocol = SecurityProtocol.SaslSsl,
+        SaslMechanism = SaslMechanism.Plain,
+        SaslUsername = "656XTLT7FQD4EMQG",
+        SaslPassword = "oNi81vYy9QCzLLmhpc1odNH9L9nSNZeDcXrPzv8SRdQWxJYddmOa/kUV1wHjPsZL",
+        SocketTimeoutMs = 5000,
+        MessageTimeoutMs = 5000,
+        RequestTimeoutMs = 5000
+    }, timeout: TimeSpan.FromSeconds(10));
 
 // Add CORS policy before building the app
 builder.Services.AddCors(options =>
