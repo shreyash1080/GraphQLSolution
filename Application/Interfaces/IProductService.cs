@@ -19,5 +19,6 @@ namespace Application.Interfaces
 
         // Task<bool> PublishProductAsync(Product product);
         Task<ServiceResponse<UpdateProductModel>> UpdateProductServiceAsync(UpdateProductModel productModel);
-    }
+    
+     }
 }

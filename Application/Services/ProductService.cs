@@ -173,5 +173,57 @@ namespace Application.Services
 
 
 
+
+
+        // Service Layer
+        public async Task<ServiceResponse<string>> DeleteProductServiceAsync(int productId)
+        {
+            try
+            {
+                if (productId == null)
+                {
+                    throw new ArgumentException("Product ID cannot be null.");
+                }
+
+                // Delete the product using the repository
+                var deletedProduct = await _repository.DeleteProductAsync(productId);
+
+                if (deletedProduct == null)
+                {
+                    return new ServiceResponse<string>
+                    {
+                        Success = false,
+                        Message = "Product not found or already deleted.",
+                        Data = null
+                    };
+                }
+
+                // Log the deleted product
+                Console.WriteLine($"✅ Product deleted: {deletedProduct.Id} - {deletedProduct.Name}");
+
+                // Return success response
+                return new ServiceResponse<string>
+                {
+                    Success = true,
+                    Message = $"Product '{deletedProduct.Name}' deleted successfully.",
+                    Data = deletedProduct.Id.ToString()
+                };
+            }
+            catch (Exception ex)
+            {
+                // Log the exception
+                Console.WriteLine($"❌ Error deleting product: {ex.Message}");
+
+                // Return error response
+                return new ServiceResponse<string>
+                {
+                    Success = false,
+                    Message = $"Failed to delete product: {ex.Message}",
+                    Data = null
+                };
+            }
+        }
+
+
     }
 }

@@ -16,4 +16,5 @@ namespace Core.Interfaces
         Task<Product> UpdateProductRepositoryAsync(Product productModel);
     }
 
+            
 }
