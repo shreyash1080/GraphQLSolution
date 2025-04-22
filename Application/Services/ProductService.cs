@@ -78,7 +78,7 @@ namespace Application.Services
         {
             try
             {
-                if (productModel.Id <= 0)
+                if (productModel.Id == null)
                 {
                     return new ServiceResponse<UpdateProductModel>
                     {
