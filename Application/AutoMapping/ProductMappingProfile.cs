@@ -15,11 +15,6 @@ namespace Application.AutoMapping
         {
             CreateMap<ProductModel, Product>();
             CreateMap<Product, ProductModel>();
-
-            CreateMap<UpdateProductModel, Product>();
-            CreateMap<Product, UpdateProductModel>();
-
-
         }
     }
 }
