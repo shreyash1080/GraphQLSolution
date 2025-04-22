@@ -17,14 +17,17 @@ namespace KafkaProducer.Configuration
 
     public class ProducerConfigSettings
     {
-        public string ClientId { get; set; } = string.Empty;
+        public string ClientId { get; set; } = "ccloud-csharp-client-1fd89a7b-0e38-407c-b0c4-28100baaa739";
         public Acks Acks { get; set; } = Acks.All;
         public int MessageTimeoutMs { get; set; } = 30000;
         public int RetryBackoffMs { get; set; } = 1000;
         public bool EnableIdempotence { get; set; } = true;
-        public int MaxInFlight { get; set; } = 5;
-        public int LingerMs { get; set; } = 5;
-        public CompressionType CompressionType { get; set; } = CompressionType.Snappy;
+
+        // Add these new properties for future appsettings use
+        public string SecurityProtocol { get; set; } = "SaslSsl";
+        public string SaslMechanism { get; set; } = "Plain";
+        public string SaslUsername { get; set; } = string.Empty;
+        public string SaslPassword { get; set; } = string.Empty;
     }
 
     public class ConsumerConfigSettings

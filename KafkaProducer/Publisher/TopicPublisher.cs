@@ -38,12 +38,23 @@ namespace KafkaProducer.Publisher
             //ProducerConfig is a configuration class for setting up a Kafka producer. It defines how the producer behaves, including Kafka broker settings, acknowledgments, and client identity.
             var config = new ProducerConfig
             {
-                BootstrapServers = "localhost:9092",// Kafka broker address
-                ClientId = _kafkaConfig.Producer.ClientId,// Unique identifier for this producer
-                Acks = _kafkaConfig.Producer.Acks,// Controls message durability
-                MessageTimeoutMs = _kafkaConfig.Producer.MessageTimeoutMs, // Add
-                RetryBackoffMs = _kafkaConfig.Producer.RetryBackoffMs,      // Add
-                EnableIdempotence = _kafkaConfig.Producer.EnableIdempotence // Add
+                // Direct Confluent Cloud values
+                BootstrapServers = "pkc-619z3.us-east1.gcp.confluent.cloud:9092",
+                SecurityProtocol = SecurityProtocol.SaslSsl,
+                SaslMechanism = SaslMechanism.Plain,
+                SaslUsername = "656XTLT7FQD4EMQG",
+                SaslPassword = "oNi81vYy9QCzLLmhpc1odNH9L9nSNZeDcXrPzv8SRdQWxJYddmOa/kUV1wHjPsZL",
+
+                // Preserve existing appsettings-driven configs
+                ClientId = "ccloud-csharp-client-1fd89a7b-0e38-407c-b0c4-28100baaa739",
+                Acks = _kafkaConfig.Producer.Acks,
+                MessageTimeoutMs = _kafkaConfig.Producer.MessageTimeoutMs,
+                RetryBackoffMs = _kafkaConfig.Producer.RetryBackoffMs,
+                EnableIdempotence = _kafkaConfig.Producer.EnableIdempotence,
+
+                // Add recommended Confluent Cloud settings
+                SocketTimeoutMs = 30000,
+                RequestTimeoutMs = 30000
             };
 
             //A builder class that helps create a Kafka producer based on ProducerConfig.

@@ -9,9 +9,11 @@
   <ItemGroup>
     <PackageReference Include="Chr.Avro" Version="10.7.0" />
     <PackageReference Include="Chr.Avro.Confluent" Version="10.7.0" />
-    <PackageReference Include="Confluent.Kafka" Version="2.9.0" />
+    <PackageReference Include="Confluent.Kafka" Version="2.10.0" />
     <PackageReference Include="Confluent.SchemaRegistry" Version="2.9.0" />
     <PackageReference Include="Confluent.SchemaRegistry.Serdes.Avro" Version="2.9.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.4" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Ini" Version="9.0.4" />
     <PackageReference Include="Microsoft.Graph" Version="5.75.0" />
 
   </ItemGroup>
