@@ -13,5 +13,8 @@ namespace Core.Interfaces
 
         Task<Product> AddProductAsync(Product product);
         Task<Product> DeleteProductAsync(int productId);
-            }
+        Task<Product> UpdateProductRepositoryAsync(Product productModel);
+    }
+
+            
 }

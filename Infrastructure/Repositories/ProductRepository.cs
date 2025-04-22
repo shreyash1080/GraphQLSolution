@@ -5,7 +5,9 @@ using Core.Entities;
 using Core.Interfaces;
 using Application.Models;
 using System.Data;
-using Microsoft.Extensions.Logging; // Reference to the Product class defined in the Core.Entities namespace
+using Microsoft.Extensions.Logging;
+using Common.Response;
+using Dapper; // Reference to the Product class defined in the Core.Entities namespace
 
 namespace Infrastructure.Repositories
 {
@@ -80,22 +82,17 @@ namespace Infrastructure.Repositories
 
             // Define the SQL query with OUTPUT to return the inserted row
             using var command = new SqlCommand(
-             "INSERT INTO Products (Name, Price, CreatedAt, Description, Stock, IsAvailable, Category) " +
-             "OUTPUT INSERTED.Id, INSERTED.Name, INSERTED.Price, INSERTED.CreatedAt, INSERTED.Description, " +
-             "INSERTED.Stock, INSERTED.IsAvailable, INSERTED.Category " +
-             "VALUES (@Name, @Price, @CreatedAt, @Description, @Stock, @IsAvailable, @Category)",
-            connection);
-
+        "INSERT INTO Products (Name, Price, CreatedAt, Description, Stock, IsAvailable, Category) " +
+        "OUTPUT INSERTED.Id, INSERTED.Name, INSERTED.Price, INSERTED.CreatedAt, INSERTED.Description, " +
+        "INSERTED.Stock, INSERTED.IsAvailable, INSERTED.Category " +
+        "VALUES (@Name, @Price, GETDATE(), @Description, @Stock, @IsAvailable, @Category)",
+        connection);
 
             // Add parameters to the command to prevent SQL injection
             //SqlDbType It's an enum representing SQL Server data types in C#.
             // Add parameters to the command to prevent SQL injection
             command.Parameters.Add(new SqlParameter("@Name", SqlDbType.NVarChar) { Value = product.Name });
             command.Parameters.Add(new SqlParameter("@Price", SqlDbType.Decimal) { Value = product.Price });
-            command.Parameters.Add(new SqlParameter("@CreatedAt", SqlDbType.DateTime)
-            {
-                Value = (object?)product.CreatedAt ?? DBNull.Value
-            });
             command.Parameters.Add(new SqlParameter("@Description", SqlDbType.NVarChar)
             {
                 Value = (object?)product.Description ?? DBNull.Value
@@ -171,7 +168,38 @@ namespace Infrastructure.Repositories
             Console.WriteLine("❌ No Product Found to Delete.");
             return null;
         }
+        public async Task<Product> UpdateProductRepositoryAsync(Product m)
+        {
+            using var conn = new SqlConnection(_connectionString);
+            await conn.OpenAsync();
 
+            var sql = @"
+UPDATE Products
+SET
+    Name         = COALESCE(@Name,         Name),
+    Price        = COALESCE(@Price,        Price),
+    Description  = COALESCE(@Description,  Description),
+    Stock        = COALESCE(@Stock,        Stock),
+    IsAvailable  = COALESCE(@IsAvailable,  IsAvailable),
+    Category     = COALESCE(@Category,     Category)
+OUTPUT INSERTED.*
+WHERE Id = @Id";
+
+            // Dapper will bind null for any missing field and COALESCE keeps old value.
+            var updated = await conn.QuerySingleOrDefaultAsync<Product>(
+                sql,
+                new
+                {
+                    m.Id,
+                    m.Name,
+                    m.Price,
+                    m.Description,
+                    m.Stock,
+                    m.IsAvailable,
+                    m.Category
+                });
+            return updated;
+        }
     }
 }
 

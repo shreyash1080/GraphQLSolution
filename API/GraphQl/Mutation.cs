@@ -1,4 +1,5 @@
 ﻿using API.GraphQl.Types;
+using Application.Interfaces;
 using Application.Models;
 using Application.Services;
 using Common.Response;
@@ -9,7 +10,8 @@ namespace API.GraphQl
     public class Mutation
     {
 
-        public async Task<ProductModel>  AddProductAsync(ProductModel productModel , [Service] ProductService productService)
+
+        public async Task<ServiceResponse<ProductModel>> AddProductAsync(ProductModel productModel , [Service] ProductService productService)
         {
             return await productService.AddProductServiceAsync(productModel);
         }
@@ -26,6 +28,11 @@ namespace API.GraphQl
         {
             var result = await productService.DeleteProductServiceAsync(productId);
             return result;
+        }
+
+        public async Task<ServiceResponse<UpdateProductModel>> UpdateProductAsync(UpdateProductModel UpdateProductModel, [Service] ProductService productService)
+        {
+            return await productService.UpdateProductServiceAsync(UpdateProductModel);
         }
 
     }
