@@ -13,8 +13,11 @@ namespace Application.Interfaces
     {
 
         Task<List<ProductModel>> GetProductsAsync();
-        Task<ProductModel> AddProductServiceAsync(ProductModel productInput);
+        Task<ServiceResponse<ProductModel>> AddProductServiceAsync(ProductModel productInput);
 
         Task<ServiceResponse<string>> DeleteProductServiceAsync(int productId);
-     }
+
+        // Task<bool> PublishProductAsync(Product product);
+        Task<ServiceResponse<UpdateProductModel>> UpdateProductServiceAsync(UpdateProductModel productModel);
+    }
 }

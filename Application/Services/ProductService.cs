@@ -33,7 +33,7 @@ namespace Application.Services
             return productModels;
         }
 
-        public async Task<ProductModel> AddProductServiceAsync(ProductModel productModel)
+        public async Task<ServiceResponse<ProductModel>> AddProductServiceAsync(ProductModel productModel)
         {
             // Map ProductInput to Product 
             var product = _mapper.Map<Product>(productModel);
@@ -54,11 +54,69 @@ namespace Application.Services
             savedProduct.Id,
             product);
 
-            var result = _mapper.Map<ProductModel>(product);
+            var result = _mapper.Map<ProductModel>(savedProduct);
 
             //Console.WriteLine(isPublished ? "✅ Published" : "❌ Failed");
+            if (result == null)
+            {
+                return new ServiceResponse<ProductModel>
+                {
+                    Data = null,
+                    Message = "Failed to insert product.",
+                    Success = false
+                };
+            }
 
-            return result;
+            return new ServiceResponse<ProductModel>
+            {
+                Data = result,
+                Message = "Product inserted successfully.",
+                Success = true
+            };
+        }
+        public async Task<ServiceResponse<UpdateProductModel>> UpdateProductServiceAsync(UpdateProductModel productModel)
+        {
+            try
+            {
+                if (productModel.Id <= 0)
+                {
+                    return new ServiceResponse<UpdateProductModel>
+                    {
+                        Success = false,
+                        Message = "Product ID is required.",
+                        Data = null
+                    };
+                }
+
+                // Call the repository to update and get the updated product
+                var updatedProduct = await _repository.UpdateProductRepositoryAsync(_mapper.Map<Product>(productModel));
+
+                if (updatedProduct == null)
+                {
+                    return new ServiceResponse<UpdateProductModel>
+                    {
+                        Success = false,
+                        Message = "Product not found or update failed.",
+                        Data = null
+                    };
+                }
+
+                return new ServiceResponse<UpdateProductModel>
+                {
+                    Success = true,
+                    Message = "Product updated successfully.",
+                    Data = _mapper.Map<UpdateProductModel>(updatedProduct)
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ServiceResponse<UpdateProductModel>
+                {
+                    Success = false,
+                    Message = $"Failed to update product: {ex.Message}",
+                    Data = null
+                };
+            }
         }
 
 
@@ -111,6 +169,8 @@ namespace Application.Services
                 };
             }
         }
+
+
 
 
     }
