@@ -28,6 +28,11 @@ namespace Infrastructure.Repositories
         // In UserRepository.cs
         public async Task<Users?> GetUserLoginAsync(string email, string password)
         {
+            if (string.IsNullOrEmpty(password))
+            {
+                throw new ArgumentNullException(nameof(password), "Password cannot be null or empty.");
+            }
+
             using var connection = new SqlConnection(_connectionString);
             await connection.OpenAsync();
 
@@ -45,27 +50,30 @@ namespace Infrastructure.Repositories
 
                 if (await reader.ReadAsync())
                 {
-                    var storedHash = reader.GetString("password_hash");
-                    if (!BCrypt.Net.BCrypt.Verify(password, storedHash))
+                    var storedHash = reader.IsDBNull(reader.GetOrdinal("password_hash"))
+                        ? null
+                        : reader.GetString(reader.GetOrdinal("password_hash"));
+
+                    if (string.IsNullOrEmpty(storedHash) || !BCrypt.Net.BCrypt.Verify(password, storedHash))
                     {
-                        return null;
+                        return null; // Authentication failed
                     }
 
                     return new Users
                     {
                         user_id = reader.GetInt32(reader.GetOrdinal("user_id")),
                         email = reader.GetString(reader.GetOrdinal("email")),
-                        first_name = reader.IsDBNull("first_name")
+                        first_name = reader.IsDBNull(reader.GetOrdinal("first_name"))
                             ? null
-                            : reader.GetString("first_name"),
-                        last_name = reader.IsDBNull("last_name")
+                            : reader.GetString(reader.GetOrdinal("first_name")),
+                        last_name = reader.IsDBNull(reader.GetOrdinal("last_name"))
                             ? null
-                            : reader.GetString("last_name"),
+                            : reader.GetString(reader.GetOrdinal("last_name")),
                         created_at = reader.GetDateTime(reader.GetOrdinal("created_at")),
                         updated_at = reader.GetDateTime(reader.GetOrdinal("updated_at"))
                     };
                 }
-                return null;
+                return null; // User not found
             }
             catch (SqlException ex)
             {
@@ -76,7 +84,6 @@ namespace Infrastructure.Repositories
                 await connection.CloseAsync();
             }
         }
-
 
 
 

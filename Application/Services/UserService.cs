@@ -38,7 +38,7 @@ namespace Application.Services
              
 
                 var existingUser = await _userRepository.GetUserLoginAsync(email, password);
-                if (existingUser == null || !BCrypt.Net.BCrypt.Verify(password, existingUser.password_hash))
+                if (existingUser == null)
                 {
                     return new ServiceResponse<QLResponseUserModel>
                     {
