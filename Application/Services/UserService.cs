@@ -13,6 +13,7 @@ using System.Text;
 using System.Threading.Tasks;
 using BCrypt.Net;
 using Common.Response;
+using Avro.Generic;
 
 
 namespace Application.Services
@@ -27,44 +28,51 @@ namespace Application.Services
             _logger = logger;
         }
 
+        // In UserService.cs
         public async Task<ServiceResponse<QLResponseUserModel>> GetUserLoginServiceAsync(string email, string password)
         {
             ValidateCredentials(email, password);
             try
             {
-                var existingUser = await _userRepository.GetUserLoginAsync(email, password);
-                if (existingUser == null)
-                {
 
+             
+
+                var existingUser = await _userRepository.GetUserLoginAsync(email, password);
+                if (existingUser == null || !BCrypt.Net.BCrypt.Verify(password, existingUser.password_hash))
+                {
                     return new ServiceResponse<QLResponseUserModel>
                     {
                         Success = false,
-                        Message = "User Not Exist, Please Sign In.",
+                        Message = "Invalid credentials",
                         Data = null
                     };
                 }
-            
-               return new ServiceResponse<QLResponseUserModel>
-               {
-                   Success = true,
-                   Message = "User Detials",
-                   Data = new QLResponseUserModel
-                   {
-                       Email = existingUser.email,
-                       FirstName = existingUser.first_name,
-                       LastName = existingUser.last_name,
-                       CreatedAt = existingUser.created_at,
-                       UpdatedAt = existingUser.updated_at
-                   }
-               };
-        }
+
+                return new ServiceResponse<QLResponseUserModel>
+                {
+                    Success = true,
+                    Message = "Authentication successful",
+                    Data = new QLResponseUserModel
+                    {
+                        Email = existingUser.email,
+                        FirstName = existingUser.first_name ?? string.Empty,
+                        LastName = existingUser.last_name ?? string.Empty,
+                        CreatedAt = existingUser.created_at,
+                        UpdatedAt = existingUser.updated_at
+                    }
+                };
+            }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Please Enter Correct Credentials");
-                throw new AuthenticationException("Authentication failed", ex);
+                _logger.LogError(ex, "Authentication error");
+                return new ServiceResponse<QLResponseUserModel>
+                {
+                    Success = false,
+                    Message = "Authentication failed",
+                    Data = null // Return empty object
+                };
             }
         }
-
         private static void ValidateCredentials(string email, string password)
         {
             if (string.IsNullOrWhiteSpace(email))

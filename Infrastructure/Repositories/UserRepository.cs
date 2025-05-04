@@ -25,41 +25,51 @@ namespace Infrastructure.Repositories
             _connectionString = connectionString;
         }
 
+        // In UserRepository.cs
         public async Task<Users?> GetUserLoginAsync(string email, string password)
         {
             using var connection = new SqlConnection(_connectionString);
             await connection.OpenAsync();
+
             const string query = @"
-                                    SELECT user_id,email,first_name,last_name FROM users 
-                                    WHERE email = @Email AND password_hash = @PasswordHash";
+        SELECT user_id, email, password_hash, first_name, last_name, created_at, updated_at
+        FROM users
+        WHERE email = @Email";
+
             try
             {
-
                 using var command = new SqlCommand(query, connection);
-
                 command.Parameters.AddWithValue("@Email", email);
-                command.Parameters.AddWithValue("@PasswordHash", password);
 
                 using var reader = await command.ExecuteReaderAsync();
 
                 if (await reader.ReadAsync())
                 {
+                    var storedHash = reader.GetString("password_hash");
+                    if (!BCrypt.Net.BCrypt.Verify(password, storedHash))
+                    {
+                        return null;
+                    }
+
                     return new Users
                     {
                         user_id = reader.GetInt32(reader.GetOrdinal("user_id")),
                         email = reader.GetString(reader.GetOrdinal("email")),
-                        first_name = reader.GetString(reader.GetOrdinal("first_name")),
-                        last_name = reader.GetString(reader.GetOrdinal("last_name"))
-
+                        first_name = reader.IsDBNull("first_name")
+                            ? null
+                            : reader.GetString("first_name"),
+                        last_name = reader.IsDBNull("last_name")
+                            ? null
+                            : reader.GetString("last_name"),
+                        created_at = reader.GetDateTime(reader.GetOrdinal("created_at")),
+                        updated_at = reader.GetDateTime(reader.GetOrdinal("updated_at"))
                     };
-
                 }
                 return null;
-
             }
             catch (SqlException ex)
             {
-                throw new Exception("An error occurred while executing the SQL command.", ex);
+                throw new Exception("Database error during login", ex);
             }
             finally
             {
