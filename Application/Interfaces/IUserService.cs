@@ -1,4 +1,5 @@
 ﻿using Application.Models;
+using Common.Response;
 using Core.Entities;
 using System;
 using System.Collections.Generic;
@@ -10,7 +11,8 @@ namespace Application.Interfaces
 {
     public interface IUserService
     {
-        Task<UserModel> AddUsersServiceAsync(UserModel user);
-        Task<UserModel> GetUserLoginServiceAsync(string email, string password);
+        Task<QLResponseUserModel> AddUsersServiceAsync(UserModel user);
+        Task<ServiceResponse<QLResponseUserModel>> GetUserLoginServiceAsync(string email, string password);
+            
     }
 }

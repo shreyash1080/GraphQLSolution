@@ -89,9 +89,9 @@ namespace Infrastructure.Repositories
                                     @Email, 
                                     @PasswordHash, 
                                     @FirstName, 
-                                    @LastName, 
-                                    @CreatedAt, 
-                                    @UpdatedAt
+                                    @LastName,
+                                    GETDATE(),
+                                    GETDATE()
                                    )";
 
             try
@@ -102,8 +102,7 @@ namespace Infrastructure.Repositories
                 command.Parameters.AddWithValue("@PasswordHash", user.password_hash);
                 command.Parameters.AddWithValue("@FirstName", user.first_name ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@LastName", user.last_name ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@CreatedAt", user.created_at);
-                command.Parameters.AddWithValue("@UpdatedAt", user.updated_at);
+
 
                 using var reader = await command.ExecuteReaderAsync();
 

@@ -17,7 +17,7 @@ namespace API.GraphQl
         }
 
 
-        public async Task<UserModel> AddUsersAsync(UserModel userInput, [Service] UserService userService)
+        public async Task<QLResponseUserModel> AddUsersAsync(UserModel userInput, [Service] UserService userService)
         {
 
             return await userService.AddUsersServiceAsync(userInput);

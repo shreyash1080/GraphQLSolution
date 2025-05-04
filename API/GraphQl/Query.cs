@@ -1,5 +1,6 @@
 ﻿using Application.Models;
 using Application.Services; // Now valid because Query is in API or Application
+using Common.Response;
 using Core.Entities;
 using HotChocolate;
 using Microsoft.Graph.Models;
@@ -24,7 +25,7 @@ namespace API.GraphQL // Update based on where you moved it
 
 
         [GraphQLName("GetUserLoginAsync")]
-        public async Task<UserModel> GetUserLoginAsync(string email, string password)
+        public async Task<ServiceResponse<QLResponseUserModel>> GetUserLoginAsync(string email, string password)
         {
             return await _userService.GetUserLoginServiceAsync(email, password);
         }
@@ -34,6 +35,7 @@ namespace API.GraphQL // Update based on where you moved it
         //{
         //    return await productService.GetProductsAsync();
         //}
+
 
     
     }

@@ -11,6 +11,9 @@ using System.Net.Mail;
 using System.Security.Authentication;
 using System.Text;
 using System.Threading.Tasks;
+using BCrypt.Net;
+using Common.Response;
+
 
 namespace Application.Services
 {
@@ -24,20 +27,37 @@ namespace Application.Services
             _logger = logger;
         }
 
-        public async Task<UserModel> GetUserLoginServiceAsync(string email,
-        string password)
+        public async Task<ServiceResponse<QLResponseUserModel>> GetUserLoginServiceAsync(string email, string password)
         {
             ValidateCredentials(email, password);
             try
             {
                 var existingUser = await _userRepository.GetUserLoginAsync(email, password);
-                return new UserModel
+                if (existingUser == null)
                 {
-                    Email = existingUser.email,
-                    FirstName = existingUser?.first_name,
-                    LastName = existingUser?.last_name,
-                };
-            }
+
+                    return new ServiceResponse<QLResponseUserModel>
+                    {
+                        Success = false,
+                        Message = "User Not Exist, Please Sign In.",
+                        Data = null
+                    };
+                }
+            
+               return new ServiceResponse<QLResponseUserModel>
+               {
+                   Success = true,
+                   Message = "User Detials",
+                   Data = new QLResponseUserModel
+                   {
+                       Email = existingUser.email,
+                       FirstName = existingUser.first_name,
+                       LastName = existingUser.last_name,
+                       CreatedAt = existingUser.created_at,
+                       UpdatedAt = existingUser.updated_at
+                   }
+               };
+        }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Please Enter Correct Credentials");
@@ -70,15 +90,13 @@ namespace Application.Services
         }
 
 
-        public async Task<UserModel> AddUsersServiceAsync(UserModel user)
+        public async Task<QLResponseUserModel> AddUsersServiceAsync(UserModel user)
         {
             // Map UserModel to Users entity
             var userEntity = new Users
             {
-                created_at = DateTime.UtcNow,
-                updated_at = DateTime.UtcNow,
                 email = user.Email,
-                password_hash = user.Password, // Hash password in production
+                password_hash = HashPassword(user.Password), // Ensure password is hashed
                 first_name = user.FirstName,
                 last_name = user.LastName,
             };
@@ -86,17 +104,23 @@ namespace Application.Services
             // Call repository to add user
             var addedUser = await _userRepository.AddUsersAsync(userEntity);
 
-            // Map Users entity back to UserModel
-            return new UserModel
+            // Map Users entity back to UserModel (password excluded)
+            return new QLResponseUserModel
             {
                 Email = addedUser.email,
-                Password = null, // Do not return password in response
                 FirstName = addedUser.first_name,
                 LastName = addedUser.last_name,
                 CreatedAt = addedUser.created_at,
-                UpdatedAt = addedUser.updated_at,
-            };
+                UpdatedAt = addedUser.updated_at            };
         }
+
+        // Example password hashing function
+        private string HashPassword(string password)
+        {
+            // Implement a secure hashing mechanism (e.g., BCrypt)
+            return BCrypt.Net.BCrypt.HashPassword(password);
+        }
+
 
     }
 }
