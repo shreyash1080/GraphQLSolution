@@ -10,7 +10,10 @@ using KafkaProducer.Configuration;
 using KafkaProducer.Publisher;
 using Microsoft.Extensions.Options;
 using Confluent.Kafka;
-using Microsoft.Extensions.Diagnostics.HealthChecks; // Add this using directive
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text; // Add this using directive
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -21,18 +24,46 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Register Hot Chocolate GraphQL Server
 builder.Services.AddGraphQLServer()
+    .AddAuthorization() // Enable authorization
     .AddQueryType<Query>() // Adds the root Query type
     .AddMutationType<Mutation>()
     .AddType<AddProductInputType>()// Register ProductType for GraphQL
     .AddType<ProductType>()// Register AddProductType for GraphQL
     .AllowIntrospection(true) // Enable this temporarily
     .ModifyOptions(options => options.StrictValidation = false)
-    .ModifyRequestOptions(opt =>
+     .ModifyRequestOptions(o =>
+     {
+         o.ExecutionTimeout = TimeSpan.FromMinutes(3);
+         o.IncludeExceptionDetails = true;
+     });
+
+
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
     {
-        opt.ExecutionTimeout = TimeSpan.FromMinutes(3); // Increase timeout to 3 minutes
-        opt.IncludeExceptionDetails = true; // Show detailed errors
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
+            ClockSkew = TimeSpan.Zero // Strict expiration validation
+        };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnAuthenticationFailed = context =>
+            {
+                return Task.CompletedTask;
+            }
+        };
     });
-    
+
 
 string connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
@@ -99,6 +130,10 @@ builder.Services.AddCors(options =>
 
 
 var app = builder.Build();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
 
 // Enable CORS before other middleware
 app.UseCors("AllowAll");

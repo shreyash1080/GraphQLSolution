@@ -3,6 +3,7 @@ using Application.Services; // Now valid because Query is in API or Application
 using Common.Response;
 using Core.Entities;
 using HotChocolate;
+using HotChocolate.Authorization;
 using Microsoft.Graph.Models;
 
 namespace API.GraphQL // Update based on where you moved it
@@ -18,14 +19,13 @@ namespace API.GraphQL // Update based on where you moved it
             _userService = userService;
         }
 
-        // Define a GraphQL query to fetch products
+        [Authorize]
         [GraphQLName("GetProductsAsync")]
-        // Call the ProductService method to get the list of products
         public async Task<List<ProductModel>> GetProductsAsync() => await _productService.GetProductsAsync();
 
 
         [GraphQLName("GetUserLoginAsync")]
-        public async Task<ServiceResponse<QLResponseUserModel>> GetUserLoginAsync(string email, string password)
+        public async Task<string> GetUserLoginAsync(string email, string password)
         {
             return await _userService.GetUserLoginServiceAsync(email, password);
         }

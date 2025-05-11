@@ -12,7 +12,7 @@ namespace Application.Interfaces
     public interface IUserService
     {
         Task<QLResponseUserModel> AddUsersServiceAsync(UserModel user);
-        Task<ServiceResponse<QLResponseUserModel>> GetUserLoginServiceAsync(string email, string password);
+        Task<string> GetUserLoginServiceAsync(string email, string password);
             
     }
 }

@@ -14,6 +14,10 @@ using System.Threading.Tasks;
 using BCrypt.Net;
 using Common.Response;
 using Avro.Generic;
+using System.Security.Claims;
+using Microsoft.Extensions.Configuration;
+using System.IdentityModel.Tokens.Jwt;
+using Microsoft.IdentityModel.Tokens;
 
 
 namespace Application.Services
@@ -22,55 +26,56 @@ namespace Application.Services
     {
         private readonly IUserRepository _userRepository;
         private readonly ILogger<UserService> _logger;
-        public UserService(IUserRepository userRepository, ILogger<UserService> logger)
+        private readonly IConfiguration configuration;
+        public UserService(IUserRepository userRepository, ILogger<UserService> logger, IConfiguration configuration)
         {
             _userRepository = userRepository;
             _logger = logger;
+            this.configuration = configuration;
         }
 
         // In UserService.cs
-        public async Task<ServiceResponse<QLResponseUserModel>> GetUserLoginServiceAsync(string email, string password)
+        public async Task<string> GetUserLoginServiceAsync(string email, string password)
         {
             ValidateCredentials(email, password);
             try
             {
-
-             
-
                 var existingUser = await _userRepository.GetUserLoginAsync(email, password);
                 if (existingUser == null)
                 {
-                    return new ServiceResponse<QLResponseUserModel>
-                    {
-                        Success = false,
-                        Message = "Invalid credentials",
-                        Data = null
-                    };
+                    return "Invalid credentials";
                 }
 
-                return new ServiceResponse<QLResponseUserModel>
+                var claims = new[]
                 {
-                    Success = true,
-                    Message = "Authentication successful",
-                    Data = new QLResponseUserModel
-                    {
-                        Email = existingUser.email,
-                        FirstName = existingUser.first_name ?? string.Empty,
-                        LastName = existingUser.last_name ?? string.Empty,
-                        CreatedAt = existingUser.created_at,
-                        UpdatedAt = existingUser.updated_at
-                    }
-                };
+                   new Claim(JwtRegisteredClaimNames.Sub, configuration["Jwt:Subject"] ?? string.Empty),
+                   new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                   new Claim("email", existingUser.email.ToString()),
+                   new Claim("user_id", existingUser.user_id.ToString()),
+               };
+
+                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"] ?? string.Empty));
+                var signIn = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+                Console.WriteLine(key);
+
+                var token = new JwtSecurityToken(
+                    issuer: configuration["Jwt:Issuer"],
+                    audience: configuration["Jwt:Audience"],
+                    claims: claims,
+                    expires: DateTime.UtcNow.AddMinutes(30),
+                    signingCredentials: signIn
+                );
+
+                string tokenValue = new JwtSecurityTokenHandler().WriteToken(token);
+
+
+                return tokenValue;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Authentication error");
-                return new ServiceResponse<QLResponseUserModel>
-                {
-                    Success = false,
-                    Message = "Authentication failed",
-                    Data = null // Return empty object
-                };
+                return "Authentication failed";
             }
         }
         private static void ValidateCredentials(string email, string password)
