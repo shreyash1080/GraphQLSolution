@@ -16,7 +16,6 @@ namespace API.GraphQl
             return await productService.AddProductServiceAsync(productModel);
         }
 
-        [Authorize]
         public async Task<QLResponseUserModel> AddUsersAsync(UserModel userInput, [Service] UserService userService)
         {
 
