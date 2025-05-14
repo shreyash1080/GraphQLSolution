@@ -24,6 +24,16 @@ namespace Application.Models
         public bool IsAvailable { get; set; }
         public string? Category { get; set; } = null!;
 
+        public string? SkuID { get; set; } = null!;
+
+        public string? Supplier { get; set; } = null!;
+
+        public decimal? Discount { get; set; }
+
+        public string? ImageUrl { get; set; } = null!;
+
+        public Int32? UserId { get; set; } = null!;
+
     }
 
     public class UpdateProductModel
@@ -35,6 +45,15 @@ namespace Application.Models
         public int? Stock { get; set; }
         public bool? IsAvailable { get; set; }
         public string? Category { get; set; }
+
+        public string? SkuID { get; set; } = null!;
+
+        public string? Supplier { get; set; } = null!;
+
+        public decimal? Discount { get; set; } = null!;
+
+        public string? ImageUrl { get; set; } = null!;
+
     }
 
 }

@@ -25,9 +25,9 @@ namespace Application.Services
             _mapper = mapper;
         }
 
-        public async Task<List<ProductModel>> GetProductsAsync()
+        public async Task<List<ProductModel>> GetProductsAsync(Int32 UserId)
         {
-            var products = await _repository.GetProductsAsync();
+            var products = await _repository.GetProductsAsync(UserId);
             // Map Product to ProductModel
             var productModels = _mapper.Map<List<ProductModel>>(products);
             return productModels;
@@ -41,8 +41,6 @@ namespace Application.Services
             // 🔹 Save product to database
             var savedProduct = await _repository.AddProductAsync(product);
 
-            // 🔹 Debugging: Log the saved product ID
-            Console.WriteLine($"✅ Product inserted: {savedProduct.Id} - {savedProduct.Name}");
 
             //        bool isPublished = await _topicPublisher.TryPublishMessage(
             //    TopicNameEnum.AddProductTopic,
@@ -144,8 +142,6 @@ namespace Application.Services
                     };
                 }
 
-                // Log the deleted product
-                Console.WriteLine($"✅ Product deleted: {deletedProduct.Id} - {deletedProduct.Name}");
 
                 // Return success response
                 return new ServiceResponse<string>
@@ -157,8 +153,6 @@ namespace Application.Services
             }
             catch (Exception ex)
             {
-                // Log the exception
-                Console.WriteLine($"❌ Error deleting product: {ex.Message}");
 
                 // Return error response
                 return new ServiceResponse<string>
