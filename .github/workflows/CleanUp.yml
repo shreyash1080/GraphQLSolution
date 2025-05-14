@@ -1,4 +1,3 @@
-# .github/workflows/cleanup-artifacts.yml
 name: 🧹 Clean up webapp artifacts
 
 on:
@@ -15,7 +14,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: List artifacts
+        run: |
+          curl -H "Authorization: token ${{ secrets.TOKEN }}" \
+          https://api.github.com/repos/${{ github.repository }}/actions/artifacts
+
       - name: Delete all “webapp” artifacts
         uses: geekyeggo/delete-artifact@v1
         with:
           name: webapp
+          failOnError: false
