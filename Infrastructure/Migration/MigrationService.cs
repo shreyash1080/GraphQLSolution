@@ -4,6 +4,7 @@ using System;
 using System.ComponentModel;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using Microsoft.Extensions.Logging;
+using Infrastructure.Migration;
 
 namespace Infrastructure.Migrations
 {
@@ -23,7 +24,7 @@ namespace Infrastructure.Migrations
                    .AddSqlServer() // Specifies SQL Server as the database type
                     .WithGlobalConnectionString(connectionString) // Sets the connection string
                     .ScanIn(typeof(CreateProductsTable).Assembly).For.Migrations()
-                    .ScanIn(typeof(_20250415_RemoveCategoryTable).Assembly).For.Migrations()
+                    .ScanIn(typeof(ModifyProductTable).Assembly).For.Migrations()
                     ) // Scans for CreateProductsTable and related migrations
                                                                                   
                 .BuildServiceProvider(false); // Builds the service provider

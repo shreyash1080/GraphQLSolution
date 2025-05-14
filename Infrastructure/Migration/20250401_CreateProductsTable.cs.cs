@@ -3,7 +3,7 @@
 namespace Infrastructure.Migrations
 {
     [Migration(20250410)]
-    public class CreateProductsTable : Migration
+    public class CreateProductsTable : FluentMigrator.Migration
     {
         public override void Up()
         {
@@ -18,7 +18,12 @@ namespace Infrastructure.Migrations
                     .WithColumn("Description").AsString(int.MaxValue).Nullable()
                     .WithColumn("Stock").AsInt32().NotNullable().WithDefaultValue(0)
                     .WithColumn("IsAvailable").AsBoolean().NotNullable().WithDefaultValue(true)
-                    .WithColumn("Category").AsString(255).Nullable();
+                    .WithColumn("Category").AsString(255).Nullable()
+                    .WithColumn("Sku").AsString(255).Nullable()
+                    .WithColumn("Supplier").AsString(255).NotNullable()
+                    .WithColumn("Discount").AsDecimal(19, 5).Nullable()
+                    .WithColumn("ImageUrl").AsString(255).Nullable()
+                    .WithColumn("UserID").AsInt32().Nullable();
             }
         }
 

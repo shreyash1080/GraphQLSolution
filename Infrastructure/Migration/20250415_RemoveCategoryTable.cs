@@ -3,7 +3,7 @@
 namespace Infrastructure.Migrations
 {
     [Migration(20250412)]
-    public class _20250415_RemoveCategoryTable : Migration
+    public class _20250415_RemoveCategoryTable : FluentMigrator.Migration
     {
         public override void Up()
         {
