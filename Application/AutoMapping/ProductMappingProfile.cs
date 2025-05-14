@@ -18,8 +18,6 @@ namespace Application.AutoMapping
 
             CreateMap<UpdateProductModel, Product>();
             CreateMap<Product, UpdateProductModel>();
-
-
         }
     }
 }
