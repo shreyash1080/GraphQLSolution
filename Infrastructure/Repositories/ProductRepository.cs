@@ -7,7 +7,8 @@ using Application.Models;
 using System.Data;
 using Microsoft.Extensions.Logging;
 using Common.Response;
-using Dapper; // Reference to the Product class defined in the Core.Entities namespace
+using Dapper;
+using System; // Reference to the Product class defined in the Core.Entities namespace
 
 namespace Infrastructure.Repositories
 {
@@ -32,7 +33,7 @@ namespace Infrastructure.Repositories
         /// Asynchronously retrieves a list of products from the database.
         /// </summary>
         /// <returns>List of Product objects.</returns>
-        public async Task<List<Product>> GetProductsAsync()
+        public async Task<List<Product>> GetProductsAsync(Int32 userID)
         {
             var products = new List<Product>(); // Collection to store retrieved products.
 
@@ -44,7 +45,9 @@ namespace Infrastructure.Repositories
                 await connection.OpenAsync();
 
                 // Define a SQL command to execute. The SQL query fetches Id, Name, and Price columns from the Products table.
-                var command = new SqlCommand("SELECT Id,Name,CreatedAt,Description,Stock,IsAvailable, Category,Price FROM Products", connection);
+                var command = new SqlCommand("SELECT Id,Name,CreatedAt,Description,Stock,IsAvailable, Category,Price,SkuId,Supplier,Discount,ImageUrl FROM Products WHERE UserID = @UserId", connection);
+
+                command.Parameters.Add(new SqlParameter("@UserID", SqlDbType.NVarChar) { Value = userID });
 
                 // ExecuteReaderAsync runs the query and provides a reader for streaming rows from the database.
                 using (var reader = await command.ExecuteReaderAsync())
@@ -62,9 +65,11 @@ namespace Infrastructure.Repositories
                             Description = reader.IsDBNull("Description") ? null : reader.GetString("Description"), // Handle potential null values
                             Stock = reader.IsDBNull("Stock") ? 0 : reader.GetInt32("Stock"), // Handle potential null values
                             IsAvailable = reader.IsDBNull("IsAvailable") ? false : reader.GetBoolean("IsAvailable"), // Handle potential null values
-                            Category = reader.IsDBNull("Category") ? null : reader.GetString("Category") // Handle potential null values
-
-
+                            Category = reader.IsDBNull("Category") ? null : reader.GetString("Category"), // Handle potential null values
+                            SkuID = reader.IsDBNull("SkuId") ? null : reader.GetString("SkuId"), // Handle potential null values
+                            Supplier = reader.IsDBNull("Supplier") ? null : reader.GetString("Supplier"), // Handle potential null values
+                            Discount = reader.IsDBNull("Discount") ? 0 : reader.GetDecimal("Discount"), // Handle potential null values
+                            ImageUrl = reader.IsDBNull("ImageUrl") ? null : reader.GetString("ImageUrl") // Handle potential null values
                         });
                     }
                 }
@@ -82,10 +87,11 @@ namespace Infrastructure.Repositories
 
             // Define the SQL query with OUTPUT to return the inserted row
             using var command = new SqlCommand(
-        "INSERT INTO Products (Name, Price, CreatedAt, Description, Stock, IsAvailable, Category) " +
+        "INSERT INTO Products (Name, Price, CreatedAt, Description, Stock, IsAvailable, Category,SkuId,Supplier,Discount,ImageUrl,UserID) " +
         "OUTPUT INSERTED.Id, INSERTED.Name, INSERTED.Price, INSERTED.CreatedAt, INSERTED.Description, " +
-        "INSERTED.Stock, INSERTED.IsAvailable, INSERTED.Category " +
-        "VALUES (@Name, @Price, GETDATE(), @Description, @Stock, @IsAvailable, @Category)",
+        "INSERTED.Stock, INSERTED.IsAvailable, INSERTED.Category, INSERTED.SkuId, " +
+        "INSERTED.Supplier, INSERTED.Discount, INSERTED.ImageUrl, INSERTED.UserID " +
+        "VALUES (@Name, @Price, GETDATE(), @Description, @Stock, @IsAvailable, @Category,@SkuId,@Supplier,@Discount,@ImageUrl,@UserID)",
         connection);
 
             // Add parameters to the command to prevent SQL injection
@@ -100,6 +106,14 @@ namespace Infrastructure.Repositories
             command.Parameters.Add(new SqlParameter("@Stock", SqlDbType.Int) { Value = product.Stock });
             command.Parameters.Add(new SqlParameter("@IsAvailable", SqlDbType.Bit) { Value = product.IsAvailable });
             command.Parameters.Add(new SqlParameter("@Category", SqlDbType.NVarChar) { Value = product.Category });
+            command.Parameters.Add(new SqlParameter("@SkuId", SqlDbType.NVarChar) { Value = product.SkuID });
+            command.Parameters.Add(new SqlParameter("@Supplier", SqlDbType.NVarChar) { Value = product.Supplier });
+            command.Parameters.Add(new SqlParameter("@Discount", SqlDbType.Decimal) { Value = product.Discount });
+            command.Parameters.Add(new SqlParameter("@ImageUrl", SqlDbType.NVarChar)
+            {
+                Value = (object?)product.ImageUrl ?? DBNull.Value
+            });
+            command.Parameters.Add(new SqlParameter("@UserID", SqlDbType.NVarChar) { Value = product.UserId });
 
 
 
@@ -120,15 +134,16 @@ namespace Infrastructure.Repositories
                     Description = reader.GetString(reader.GetOrdinal("Description")),
                     Stock = reader.GetInt32(reader.GetOrdinal("Stock")),
                     IsAvailable = reader.GetBoolean(reader.GetOrdinal("IsAvailable")),
-                    Category = reader.GetString(reader.GetOrdinal("Category"))
+                    Category = reader.GetString(reader.GetOrdinal("Category")),
+                    SkuID = reader.GetString(reader.GetOrdinal("SkuId")),
+                    Supplier = reader.GetString(reader.GetOrdinal("Supplier")),
+                    Discount = reader.GetDecimal(reader.GetOrdinal("Discount")),
+                    ImageUrl = reader.GetString(reader.GetOrdinal("ImageUrl")),
+                    UserId = reader.GetInt32(reader.GetOrdinal("UserID"))
                 };;
-
-                // 🔹 Log the inserted product
-                Console.WriteLine($"✅ Product Inserted - ID: {insertedProduct.Id}, Name: {insertedProduct.Name}, Price: {insertedProduct.Price}");
 
                 return insertedProduct;
             }
-            Console.WriteLine("❌ No Product Inserted.");
             return null; // If no row was inserted, return null
         }
 
@@ -181,7 +196,11 @@ SET
     Description  = COALESCE(@Description,  Description),
     Stock        = COALESCE(@Stock,        Stock),
     IsAvailable  = COALESCE(@IsAvailable,  IsAvailable),
-    Category     = COALESCE(@Category,     Category)
+    Category     = COALESCE(@Category,     Category),
+    SkuId        = COALESCE(@SkuId,        SkuId),
+    Supplier     = COALESCE(@Supplier,     Supplier),
+    Discount     = COALESCE(@Discount,     Discount),
+    ImageUrl     = COALESCE(@ImageUrl,     ImageUrl)
 OUTPUT INSERTED.*
 WHERE Id = @Id";
 
@@ -196,7 +215,11 @@ WHERE Id = @Id";
                     m.Description,
                     m.Stock,
                     m.IsAvailable,
-                    m.Category
+                    m.Category,
+                    m.SkuID,
+                    m.Supplier,
+                    m.Discount,
+                    m.ImageUrl,
                 });
             return updated;
         }

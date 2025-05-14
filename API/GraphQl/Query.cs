@@ -21,7 +21,7 @@ namespace API.GraphQL // Update based on where you moved it
 
         [Authorize]
         [GraphQLName("GetProductsAsync")]
-        public async Task<List<ProductModel>> GetProductsAsync() => await _productService.GetProductsAsync();
+        public async Task<List<ProductModel>> GetProductsAsync(Int32 UserId) => await _productService.GetProductsAsync(UserId);
 
 
         [GraphQLName("GetUserLoginAsync")]
