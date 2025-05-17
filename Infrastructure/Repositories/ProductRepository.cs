@@ -47,7 +47,7 @@ namespace Infrastructure.Repositories
                 // Define a SQL command to execute. The SQL query fetches Id, Name, and Price columns from the Products table.
                 var command = new SqlCommand("SELECT Id,Name,CreatedAt,Description,Stock,IsAvailable, Category,Price,SkuId,Supplier,Discount FROM Products WHERE UserID = @UserId", connection);
 
-                command.Parameters.Add(new SqlParameter("@UserID", SqlDbType.NVarChar) { Value = userID });
+                command.Parameters.Add(new SqlParameter("@UserID", SqlDbType.Int) { Value = userID });
 
                 // ExecuteReaderAsync runs the query and provides a reader for streaming rows from the database.
                 using (var reader = await command.ExecuteReaderAsync())
@@ -108,7 +108,7 @@ namespace Infrastructure.Repositories
             command.Parameters.Add(new SqlParameter("@SkuId", SqlDbType.NVarChar) { Value = product.SkuID });
             command.Parameters.Add(new SqlParameter("@Supplier", SqlDbType.NVarChar) { Value = product.Supplier });
             command.Parameters.Add(new SqlParameter("@Discount", SqlDbType.Decimal) { Value = product.Discount });
-            command.Parameters.Add(new SqlParameter("@UserID", SqlDbType.NVarChar) { Value = product.UserId });
+            command.Parameters.Add(new SqlParameter("@UserID", SqlDbType.Int) { Value = product.UserId });
 
 
 
