@@ -49,9 +49,6 @@ namespace API.GraphQl.Types.InputType
                 .Description("The discount applied to the product.")
                 .Type<DecimalType>();
 
-            descriptor.Field(t => t.ImageUrl)
-                .Description("The image URL of the product.")
-                .Type<StringType>();
         }
     }
 }

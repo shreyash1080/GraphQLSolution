@@ -22,7 +22,6 @@ namespace Infrastructure.Migrations
                     .WithColumn("Sku").AsString(255).Nullable()
                     .WithColumn("Supplier").AsString(255).NotNullable()
                     .WithColumn("Discount").AsDecimal(19, 5).Nullable()
-                    .WithColumn("ImageUrl").AsString(255).Nullable()
                     .WithColumn("UserID").AsInt32().Nullable();
             }
         }

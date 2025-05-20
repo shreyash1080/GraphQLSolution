@@ -12,7 +12,7 @@ namespace Application.Interfaces
     public interface IProductService
     {
 
-        Task<List<ProductModel>> GetProductsAsync(Int32 UserId);
+        Task<List<ProductModel>> GetProductsAsync(int UserId);
         Task<ServiceResponse<ProductModel>> AddProductServiceAsync(ProductModel productInput);
 
         Task<ServiceResponse<string>> DeleteProductServiceAsync(int productId);

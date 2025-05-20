@@ -25,11 +25,7 @@ namespace Infrastructure.Migration
                     Alter.Table("Products")
                         .AddColumn("Discount").AsDecimal(19, 5).NotNullable().WithDefaultValue(0.0);
                 }
-                if (!Schema.Table("Products").Column("ImageUrl").Exists())
-                {
-                    Alter.Table("Products")
-                        .AddColumn("ImageUrl").AsString(255).Nullable();
-                }
+              
                 if (!Schema.Table("Products").Column("UserID").Exists())
                 {
                     // Add the 'UserID' column with a default value
@@ -71,10 +67,6 @@ namespace Infrastructure.Migration
                 if (Schema.Table("Products").Column("Supplier").Exists())
                 {
                     Delete.Column("Supplier").FromTable("Products");
-                }
-                if (Schema.Table("Products").Column("ImageUrl").Exists())
-                {
-                    Delete.Column("ImageUrl").FromTable("Products");
                 }
             }
         }

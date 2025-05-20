@@ -30,9 +30,7 @@ namespace Application.Models
 
         public decimal? Discount { get; set; }
 
-        public string? ImageUrl { get; set; } = null!;
-
-        public Int32? UserId { get; set; } = null!;
+        public int? UserId { get; set; } = null!;
 
     }
 
@@ -51,8 +49,6 @@ namespace Application.Models
         public string? Supplier { get; set; } = null!;
 
         public decimal? Discount { get; set; } = null!;
-
-        public string? ImageUrl { get; set; } = null!;
 
     }
 

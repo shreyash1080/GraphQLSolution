@@ -25,7 +25,7 @@ namespace Application.Services
             _mapper = mapper;
         }
 
-        public async Task<List<ProductModel>> GetProductsAsync(Int32 UserId)
+        public async Task<List<ProductModel>> GetProductsAsync(int UserId)
         {
             var products = await _repository.GetProductsAsync(UserId);
             // Map Product to ProductModel

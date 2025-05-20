@@ -33,7 +33,7 @@ namespace Infrastructure.Repositories
         /// Asynchronously retrieves a list of products from the database.
         /// </summary>
         /// <returns>List of Product objects.</returns>
-        public async Task<List<Product>> GetProductsAsync(Int32 userID)
+        public async Task<List<Product>> GetProductsAsync(int userID)
         {
             var products = new List<Product>(); // Collection to store retrieved products.
 
@@ -45,7 +45,7 @@ namespace Infrastructure.Repositories
                 await connection.OpenAsync();
 
                 // Define a SQL command to execute. The SQL query fetches Id, Name, and Price columns from the Products table.
-                var command = new SqlCommand("SELECT Id,Name,CreatedAt,Description,Stock,IsAvailable, Category,Price,SkuId,Supplier,Discount,ImageUrl FROM Products WHERE UserID = @UserId", connection);
+                var command = new SqlCommand("SELECT Id,Name,CreatedAt,Description,Stock,IsAvailable, Category,Price,SkuId,Supplier,Discount FROM Products WHERE UserID = @UserId", connection);
 
                 command.Parameters.Add(new SqlParameter("@UserID", SqlDbType.NVarChar) { Value = userID });
 
@@ -69,7 +69,6 @@ namespace Infrastructure.Repositories
                             SkuID = reader.IsDBNull("SkuId") ? null : reader.GetString("SkuId"), // Handle potential null values
                             Supplier = reader.IsDBNull("Supplier") ? null : reader.GetString("Supplier"), // Handle potential null values
                             Discount = reader.IsDBNull("Discount") ? 0 : reader.GetDecimal("Discount"), // Handle potential null values
-                            ImageUrl = reader.IsDBNull("ImageUrl") ? null : reader.GetString("ImageUrl") // Handle potential null values
                         });
                     }
                 }
@@ -87,11 +86,11 @@ namespace Infrastructure.Repositories
 
             // Define the SQL query with OUTPUT to return the inserted row
             using var command = new SqlCommand(
-        "INSERT INTO Products (Name, Price, CreatedAt, Description, Stock, IsAvailable, Category,SkuId,Supplier,Discount,ImageUrl,UserID) " +
+        "INSERT INTO Products (Name, Price, CreatedAt, Description, Stock, IsAvailable, Category,SkuId,Supplier,Discount,UserID) " +
         "OUTPUT INSERTED.Id, INSERTED.Name, INSERTED.Price, INSERTED.CreatedAt, INSERTED.Description, " +
         "INSERTED.Stock, INSERTED.IsAvailable, INSERTED.Category, INSERTED.SkuId, " +
-        "INSERTED.Supplier, INSERTED.Discount, INSERTED.ImageUrl, INSERTED.UserID " +
-        "VALUES (@Name, @Price, GETDATE(), @Description, @Stock, @IsAvailable, @Category,@SkuId,@Supplier,@Discount,@ImageUrl,@UserID)",
+        "INSERTED.Supplier, INSERTED.Discount, INSERTED.UserID " +
+        "VALUES (@Name, @Price, GETDATE(), @Description, @Stock, @IsAvailable, @Category,@SkuId,@Supplier,@Discount,@UserID)",
         connection);
 
             // Add parameters to the command to prevent SQL injection
@@ -109,10 +108,6 @@ namespace Infrastructure.Repositories
             command.Parameters.Add(new SqlParameter("@SkuId", SqlDbType.NVarChar) { Value = product.SkuID });
             command.Parameters.Add(new SqlParameter("@Supplier", SqlDbType.NVarChar) { Value = product.Supplier });
             command.Parameters.Add(new SqlParameter("@Discount", SqlDbType.Decimal) { Value = product.Discount });
-            command.Parameters.Add(new SqlParameter("@ImageUrl", SqlDbType.NVarChar)
-            {
-                Value = (object?)product.ImageUrl ?? DBNull.Value
-            });
             command.Parameters.Add(new SqlParameter("@UserID", SqlDbType.NVarChar) { Value = product.UserId });
 
 
@@ -138,7 +133,6 @@ namespace Infrastructure.Repositories
                     SkuID = reader.GetString(reader.GetOrdinal("SkuId")),
                     Supplier = reader.GetString(reader.GetOrdinal("Supplier")),
                     Discount = reader.GetDecimal(reader.GetOrdinal("Discount")),
-                    ImageUrl = reader.GetString(reader.GetOrdinal("ImageUrl")),
                     UserId = reader.GetInt32(reader.GetOrdinal("UserID"))
                 };;
 
@@ -199,8 +193,7 @@ SET
     Category     = COALESCE(@Category,     Category),
     SkuId        = COALESCE(@SkuId,        SkuId),
     Supplier     = COALESCE(@Supplier,     Supplier),
-    Discount     = COALESCE(@Discount,     Discount),
-    ImageUrl     = COALESCE(@ImageUrl,     ImageUrl)
+    Discount     = COALESCE(@Discount,     Discount)
 OUTPUT INSERTED.*
 WHERE Id = @Id";
 
@@ -219,7 +212,6 @@ WHERE Id = @Id";
                     m.SkuID,
                     m.Supplier,
                     m.Discount,
-                    m.ImageUrl,
                 });
             return updated;
         }
